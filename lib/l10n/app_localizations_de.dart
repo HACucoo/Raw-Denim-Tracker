@@ -307,7 +307,13 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String daysWorn(int count) {
-    return count == 1 ? '1 Tragetag' : '$count Tragetage';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Tragetage',
+      one: '1 Tragetag',
+    );
+    return '$_temp0';
   }
 
   @override

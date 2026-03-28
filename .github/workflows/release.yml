@@ -25,21 +25,18 @@ jobs:
           channel: stable
 
       - name: Decode Keystore
-        run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore.jks
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore.jks
 
       - name: Create key.properties
         run: |
-          cat > android/key.properties <<EOF
-          storeFile=keystore.jks
-          keyPassword=${{ secrets.KEY_PASSWORD }}
-          keyAlias=${{ secrets.KEY_ALIAS }}
-          storePassword=${{ secrets.STORE_PASSWORD }}
-          EOF
+          printf 'storeFile=keystore.jks\nkeyPassword=%s\nkeyAlias=%s\nstorePassword=%s\n' \
+            "${{ secrets.KEY_PASSWORD }}" \
+            "${{ secrets.KEY_ALIAS }}" \
+            "${{ secrets.STORE_PASSWORD }}" \
+            > android/key.properties
 
       - name: Create google-services.json
-        run: |
-          echo "${{ secrets.GOOGLE_SERVICES_JSON }}" > android/app/google-services.json
+        run: printf '%s' "${{ secrets.GOOGLE_SERVICES_JSON }}" > android/app/google-services.json
 
       - name: Install dependencies
         run: flutter pub get

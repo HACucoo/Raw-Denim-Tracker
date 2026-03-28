@@ -153,7 +153,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen>
       if (itemAsync.hasError) {
         return Scaffold(
           appBar: AppBar(),
-          body: Center(child: Text('Error: ${itemAsync.error}')),
+          body: Center(child: Text('Fehler: ${itemAsync.error}')),
         );
       }
       return const Scaffold(body: Center(child: CircularProgressIndicator()));

@@ -94,7 +94,7 @@ class ItemCard extends ConsumerWidget {
                                   size: 14, color: colorScheme.primary),
                               const SizedBox(width: 4),
                               Text(
-                                count == 1 ? '1 day' : '$count days',
+                                l10n.daysWorn(count),
                                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
                                       color: colorScheme.primary,
                                       fontWeight: FontWeight.w600,

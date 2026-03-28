@@ -8,7 +8,7 @@ class WidgetService {
   /// Call whenever the widget item changes or wear days are updated.
   static Future<void> updateWidget(String? itemId) async {
     if (itemId == null) {
-      await HomeWidget.saveWidgetData<String>('widget_item_name', 'No item selected');
+      await HomeWidget.saveWidgetData<String>('widget_item_name', 'Kein Element ausgewählt');
       await HomeWidget.saveWidgetData<int>('widget_wear_count', 0);
       await HomeWidget.saveWidgetData<String>('widget_item_id', '');
       await HomeWidget.saveWidgetData<String>('widget_photo_path', '');
@@ -19,7 +19,7 @@ class WidgetService {
 
       await HomeWidget.saveWidgetData<String>(
         'widget_item_name',
-        item != null ? '${item.brand} ${item.model}' : 'Unknown',
+        item != null ? '${item.brand} ${item.model}' : 'Unbekannt',
       );
       await HomeWidget.saveWidgetData<int>('widget_wear_count', total);
       await HomeWidget.saveWidgetData<String>('widget_item_id', itemId);

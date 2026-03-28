@@ -110,7 +110,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
       body: itemsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        error: (e, _) => Center(child: Text('Fehler: $e')),
         data: (items) {
           if (items.isEmpty) {
             return Center(

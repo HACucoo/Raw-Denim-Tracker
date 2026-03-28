@@ -42,7 +42,7 @@ class _WashesTabState extends ConsumerState<WashesTab> {
       children: [
         washesAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(child: Text('Error: $e')),
+          error: (e, _) => Center(child: Text('Fehler: $e')),
           data: (washes) {
             if (washes.isEmpty) {
               return Center(

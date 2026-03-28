@@ -307,7 +307,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String daysWorn(int count) {
-    return '$count Tragetage';
+    return count == 1 ? '1 Tragetag' : '$count Tragetage';
   }
 
   @override

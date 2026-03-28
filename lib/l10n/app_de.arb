@@ -104,7 +104,7 @@
   "unlinkSpreadsheet": "Tabelle trennen",
   "unlinkSpreadsheetConfirm": "Verknüpfung mit der Google-Tabelle aufheben? Die Tabelle selbst wird nicht gelöscht. Beim nächsten Aktivieren wird eine neue Tabelle angelegt.",
   "spreadsheetUnlinked": "Tabelle getrennt",
-  "daysWorn": "{count} Tragetage",
+  "daysWorn": "{count, plural, one{1 Tragetag} other{{count} Tragetage}}",
   "@daysWorn": {
     "placeholders": {
       "count": {"type": "int"}

@@ -66,7 +66,7 @@ class _WearDaysTabState extends ConsumerState<WearDaysTab> {
       children: [
         wearDaysAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(child: Text('Error: $e')),
+          error: (e, _) => Center(child: Text('Fehler: $e')),
           data: (wearDays) {
             final baseCount = itemAsync.value?.baseWearCount ?? 0;
             return ListView(

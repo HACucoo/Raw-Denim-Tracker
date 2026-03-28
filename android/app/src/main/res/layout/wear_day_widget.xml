@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="4dp">
+
+    <!-- Background card with clipping so photo stays within rounded corners -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="@drawable/widget_background"
+        android:clipToOutline="true"
+        android:outlineProvider="background"
+        android:clickable="false"
+        android:focusable="false">
+
+        <!-- Item photo (fills most of widget) -->
+        <ImageView
+            android:id="@+id/widget_photo"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:scaleType="centerCrop"
+            android:src="@mipmap/ic_launcher" />
+
+        <!-- Count bar at bottom -->
+        <TextView
+            android:id="@+id/widget_wear_count"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="0 days"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFFFF"
+            android:background="#AA000000"
+            android:paddingStart="6dp"
+            android:paddingEnd="6dp"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp"
+            android:gravity="center" />
+
+    </LinearLayout>
+
+    <!-- "Already tracked today" checkmark overlay (hidden by default) -->
+    <ImageView
+        android:id="@+id/widget_check"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_gravity="top|end"
+        android:layout_margin="6dp"
+        android:src="@android:drawable/checkbox_on_background"
+        android:visibility="gone" />
+
+</FrameLayout>

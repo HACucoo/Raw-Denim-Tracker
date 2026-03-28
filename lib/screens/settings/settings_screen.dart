@@ -1,0 +1,350 @@
+import 'package:flutter/material.dart';
+import 'package:raw_denim_tracker/l10n/app_localizations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../models/item.dart';
+import '../../providers/item_providers.dart';
+import '../../providers/settings_providers.dart';
+import '../../providers/wear_day_providers.dart';
+import '../../providers/wash_providers.dart';
+import '../../repositories/item_repository.dart';
+import '../../repositories/wear_day_repository.dart';
+import '../../services/widget_service.dart';
+import '../../repositories/wash_repository.dart';
+import '../../services/backup_service.dart';
+import '../../services/sheets_service.dart';
+
+class SettingsScreen extends ConsumerWidget {
+  const SettingsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final sheetsEnabled = ref.watch(sheetsEnabledProvider);
+    final spreadsheetId = ref.watch(sheetsSpreadsheetIdProvider);
+    final widgetItemId = ref.watch(widgetSelectedItemIdProvider);
+    final itemsAsync = ref.watch(itemsProvider);
+
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.settings)),
+      body: ListView(
+        children: [
+          // --- WIDGET ---
+          _SectionHeader(l10n.widget),
+          itemsAsync.when(
+            loading: () => const ListTile(title: Text('Loading...')),
+            error: (_, __) => const SizedBox.shrink(),
+            data: (items) => ListTile(
+              title: Text(l10n.widgetItem),
+              subtitle: Text(_itemLabel(items, widgetItemId) ?? l10n.none),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => _pickWidgetItem(context, ref, items, widgetItemId),
+            ),
+          ),
+
+          const Divider(),
+
+          // --- BACKUP ---
+          _SectionHeader(l10n.backupRestore),
+          ListTile(
+            leading: const Icon(Icons.upload_outlined),
+            title: Text(l10n.exportBackup),
+            onTap: () => _exportBackup(context, ref),
+          ),
+          ListTile(
+            leading: const Icon(Icons.save_outlined),
+            title: Text(l10n.saveBackupLocally),
+            onTap: () => _saveBackupLocally(context, ref),
+          ),
+          ListTile(
+            leading: const Icon(Icons.download_outlined),
+            title: Text(l10n.importBackup),
+            onTap: () => _importBackup(context, ref),
+          ),
+          ListTile(
+            leading: const Icon(Icons.folder_open_outlined),
+            title: Text(l10n.importLocalBackup),
+            subtitle: Text(l10n.importLocalBackupHint),
+            onTap: () => _importLocalBackup(context, ref),
+          ),
+
+          const Divider(),
+
+          // --- GOOGLE SHEETS ---
+          _SectionHeader(l10n.googleSheets),
+          SwitchListTile(
+            secondary: const Icon(Icons.table_chart_outlined),
+            title: Text(l10n.enableSheetsSync),
+            value: sheetsEnabled,
+            onChanged: (val) => ref.read(sheetsEnabledProvider.notifier).set(val),
+          ),
+          if (sheetsEnabled) ...[
+            ListTile(
+              leading: const Icon(Icons.open_in_new_outlined),
+              title: Text(spreadsheetId != null ? l10n.spreadsheetLinked : l10n.createSpreadsheet),
+              subtitle: spreadsheetId != null
+                  ? Text(spreadsheetId, overflow: TextOverflow.ellipsis)
+                  : null,
+              onTap: () => _setupSheets(context, ref),
+            ),
+            if (spreadsheetId != null)
+              ListTile(
+                leading: const Icon(Icons.sync_outlined),
+                title: Text(l10n.syncNow),
+                onTap: () => _syncNow(context, ref),
+              ),
+            if (spreadsheetId != null)
+              ListTile(
+                leading: Icon(Icons.link_off_outlined,
+                    color: Theme.of(context).colorScheme.error),
+                title: Text(l10n.unlinkSpreadsheet,
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.error)),
+                onTap: () => _unlinkSpreadsheet(context, ref),
+              ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  String? _itemLabel(List<Item> items, String? id) {
+    if (id == null) return null;
+    final item = items.where((i) => i.id == id).firstOrNull;
+    return item != null ? '${item.brand} ${item.model}' : null;
+  }
+
+  Future<void> _pickWidgetItem(
+      BuildContext context, WidgetRef ref, List<Item> items, String? current) async {
+    final l10n = AppLocalizations.of(context)!;
+    final selected = await showDialog<String?>(
+      context: context,
+      useRootNavigator: true,
+      builder: (ctx) => SimpleDialog(
+        title: Text(l10n.selectWidgetItem),
+        children: [
+          SimpleDialogOption(
+            onPressed: () => Navigator.pop(ctx, null),
+            child: Text(l10n.none),
+          ),
+          ...items.map((item) => SimpleDialogOption(
+                onPressed: () => Navigator.pop(ctx, item.id),
+                child: Text('${item.brand} ${item.model}'),
+              )),
+        ],
+      ),
+    );
+    if (context.mounted) {
+      await ref.read(widgetSelectedItemIdProvider.notifier).setItemId(selected);
+      await WidgetService.updateWidget(selected);
+    }
+  }
+
+  BackupService _backupService(WidgetRef ref) => BackupService(
+        itemRepo: ref.read(itemRepositoryProvider),
+        wearDayRepo: ref.read(wearDayRepositoryProvider),
+        washRepo: ref.read(washRepositoryProvider),
+      );
+
+  Future<void> _exportBackup(BuildContext context, WidgetRef ref) async {
+    try {
+      await _backupService(ref).exportBackup();
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Export failed: $e')));
+      }
+    }
+  }
+
+  Future<void> _saveBackupLocally(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      final path = await _backupService(ref).saveLocalBackup();
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('${l10n.savedTo}: $path'), duration: const Duration(seconds: 6)),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Save failed: $e')));
+      }
+    }
+  }
+
+  Future<void> _importBackup(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
+    final result = await _backupService(ref).importBackup();
+    if (context.mounted) _showImportResult(context, ref, l10n, result);
+  }
+
+  Future<void> _importLocalBackup(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
+    final svc = _backupService(ref);
+    final path = await svc.localBackupPath();
+    if (!context.mounted) return;
+    // Show the path and ask for confirmation before overwriting current data.
+    final confirmed = await showDialog<bool>(
+      context: context,
+      useRootNavigator: true,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.importLocalBackup),
+        content: Text(path != null
+            ? '${l10n.importLocalBackupConfirm}\n\n$path'
+            : l10n.importLocalBackupNotFound),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.cancel),
+          ),
+          if (path != null)
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(l10n.importBackup),
+            ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+    final result = await svc.importLocalBackup();
+    if (context.mounted) _showImportResult(context, ref, l10n, result);
+  }
+
+  void _showImportResult(
+      BuildContext context, WidgetRef ref, AppLocalizations l10n, BackupResult result) {
+    final msg = switch (result) {
+      BackupResult.success => l10n.importSuccess,
+      BackupResult.cancelled => null,
+      BackupResult.invalidFormat => l10n.importInvalidFormat,
+      BackupResult.notFound => l10n.importLocalBackupNotFound,
+      BackupResult.error => l10n.importError,
+    };
+    if (msg != null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    }
+    if (result == BackupResult.success) {
+      ref.invalidate(itemsProvider);
+    }
+  }
+
+  Future<void> _unlinkSpreadsheet(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.unlinkSpreadsheet),
+        content: Text(l10n.unlinkSpreadsheetConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.error),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(l10n.unlinkSpreadsheet),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      await ref.read(sheetsSpreadsheetIdProvider.notifier).set(null);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(l10n.spreadsheetUnlinked)),
+        );
+      }
+    }
+  }
+
+  Future<void> _setupSheets(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
+    final existingId = ref.read(sheetsSpreadsheetIdProvider);
+    try {
+      await SheetsService.signIn();
+      if (existingId != null) {
+        // Already linked — just re-authenticate, keep the existing spreadsheet.
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(l10n.spreadsheetLinked)),
+          );
+        }
+        return;
+      }
+      final id = await SheetsService.createSpreadsheet('Raw Denim Tracker');
+      if (context.mounted) {
+        await ref.read(sheetsSpreadsheetIdProvider.notifier).set(id);
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.spreadsheetCreated)));
+      }
+    } catch (e, stack) {
+      if (context.mounted) {
+        await showDialog(
+          context: context,
+          useRootNavigator: true,
+          builder: (ctx) => AlertDialog(
+            title: const Text('Google Sheets Fehler'),
+            content: SingleChildScrollView(
+              child: SelectableText('$e\n\n$stack'),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('OK'),
+              ),
+            ],
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _syncNow(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context)!;
+    final spreadsheetId = ref.read(sheetsSpreadsheetIdProvider);
+    if (spreadsheetId == null) return;
+
+    try {
+      final items = await ref.read(itemRepositoryProvider).getAll();
+      final wearDays = await ref.read(wearDayRepositoryProvider).getAll();
+      final washes = await ref.read(washRepositoryProvider).getAll();
+      final trackedCounts = await ref.read(wearDayRepositoryProvider).getAllTrackedCounts();
+
+      await SheetsService.syncAll(
+        spreadsheetId: spreadsheetId,
+        items: items,
+        wearDays: wearDays,
+        washes: washes,
+        trackedCounts: trackedCounts,
+      );
+
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.syncSuccess)));
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Sync failed: $e')));
+      }
+    }
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  final String title;
+  const _SectionHeader(this.title);
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.fromLTRB(16, 20, 16, 4),
+        child: Text(
+          title,
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                color: Theme.of(context).colorScheme.primary,
+              ),
+        ),
+      );
+}

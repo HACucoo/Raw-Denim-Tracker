@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="80dp"
+    android:height="80dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#5C7A9A"
+        android:pathData="M0,0h24v24H0z"/>
+    <!-- simple jeans icon shape -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M6,4h12l-1,8h-3l-1,8H11l-1,-8H7L6,4z
+                          M7,4 L6,4 Q5,4 5,5 L5,7 L7,7 Z
+                          M17,4 L18,4 Q19,4 19,5 L19,7 L17,7 Z"/>
+</vector>

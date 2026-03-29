@@ -110,6 +110,18 @@
       "count": {"type": "int"}
     }
   },
+  "homeAssistant": "Home Assistant",
+  "haEnable": "Home Assistant aktivieren",
+  "haConfigureConnection": "Verbindung konfigurieren",
+  "haUrl": "Home Assistant URL",
+  "haUrlHint": "https://deine-instanz.ui.nabu.casa",
+  "haToken": "Long-Lived Access Token",
+  "haTokenHint": "Token aus HA-Profil → Sicherheit",
+  "haTestConnection": "Verbindung testen",
+  "haConnectionSuccess": "Verbindung erfolgreich",
+  "haConnectionFailed": "Verbindung fehlgeschlagen",
+  "haSave": "Speichern",
+  "haNotConfigured": "Nicht konfiguriert",
   "nfcLinked": "NFC verknüpft",
   "camera": "Kamera",
   "gallery": "Galerie"

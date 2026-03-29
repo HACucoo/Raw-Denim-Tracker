@@ -309,6 +309,42 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get homeAssistant => 'Home Assistant';
+
+  @override
+  String get haEnable => 'Enable Home Assistant';
+
+  @override
+  String get haConfigureConnection => 'Configure connection';
+
+  @override
+  String get haUrl => 'Home Assistant URL';
+
+  @override
+  String get haUrlHint => 'https://your-instance.ui.nabu.casa';
+
+  @override
+  String get haToken => 'Long-Lived Access Token';
+
+  @override
+  String get haTokenHint => 'Token from HA profile → Security';
+
+  @override
+  String get haTestConnection => 'Test connection';
+
+  @override
+  String get haConnectionSuccess => 'Connection successful';
+
+  @override
+  String get haConnectionFailed => 'Connection failed';
+
+  @override
+  String get haSave => 'Save';
+
+  @override
+  String get haNotConfigured => 'Not configured';
+
+  @override
   String get nfcLinked => 'NFC linked';
 
   @override

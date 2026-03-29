@@ -3,7 +3,9 @@ import 'package:uuid/uuid.dart';
 import '../models/wear_day.dart';
 import '../repositories/item_repository.dart';
 import '../repositories/wear_day_repository.dart';
+import '../services/ha_service.dart';
 import 'item_providers.dart';
+import 'settings_providers.dart';
 
 final wearDayRepositoryProvider = Provider<WearDayRepository>((_) => WearDayRepository());
 
@@ -41,7 +43,29 @@ class WearDayActions {
     _ref.invalidate(wearDaysProvider(itemId));
     _ref.invalidate(wearDayCountProvider(itemId));
     _ref.invalidate(lastWearDateProvider(itemId));
+    _pushToHa(itemId);
     return true;
+  }
+
+  /// Fire-and-forget HA update — failures are silently ignored.
+  Future<void> _pushToHa(String itemId) async {
+    final haEnabled = _ref.read(haEnabledProvider);
+    if (!haEnabled) return;
+    final haUrl = _ref.read(haUrlProvider);
+    final haToken = _ref.read(haTokenProvider);
+    if (haUrl == null || haToken == null) return;
+
+    final item = await _itemRepo.getById(itemId);
+    if (item == null) return;
+    final tracked = await _repo.countByItemId(itemId);
+    final totalDays = item.baseWearCount + tracked;
+
+    await HaService.updateCurrentItem(
+      haUrl: haUrl,
+      token: haToken,
+      itemName: '${item.brand} ${item.model}',
+      wearDays: totalDays,
+    ).catchError((_) => false);
   }
 
   Future<void> updateWearDay(String itemId, WearDay wearDay) async {

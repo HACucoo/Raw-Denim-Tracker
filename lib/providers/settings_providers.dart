@@ -58,6 +58,90 @@ class SheetsEnabledNotifier extends Notifier<bool> {
   }
 }
 
+// --- HOME ASSISTANT ---
+
+final haEnabledProvider =
+    NotifierProvider<HaEnabledNotifier, bool>(HaEnabledNotifier.new);
+
+class HaEnabledNotifier extends Notifier<bool> {
+  static const _key = 'ha_enabled';
+
+  @override
+  bool build() {
+    Future.microtask(_load);
+    return false;
+  }
+
+  Future<void> _load() async {
+    final prefs = await ref.read(sharedPreferencesProvider.future);
+    state = prefs.getBool(_key) ?? false;
+  }
+
+  Future<void> set(bool value) async {
+    final prefs = await ref.read(sharedPreferencesProvider.future);
+    await prefs.setBool(_key, value);
+    state = value;
+  }
+}
+
+final haUrlProvider =
+    NotifierProvider<HaUrlNotifier, String?>(HaUrlNotifier.new);
+
+class HaUrlNotifier extends Notifier<String?> {
+  static const _key = 'ha_url';
+
+  @override
+  String? build() {
+    Future.microtask(_load);
+    return null;
+  }
+
+  Future<void> _load() async {
+    final prefs = await ref.read(sharedPreferencesProvider.future);
+    state = prefs.getString(_key);
+  }
+
+  Future<void> set(String? value) async {
+    final prefs = await ref.read(sharedPreferencesProvider.future);
+    if (value == null || value.isEmpty) {
+      await prefs.remove(_key);
+      state = null;
+    } else {
+      await prefs.setString(_key, value);
+      state = value;
+    }
+  }
+}
+
+final haTokenProvider =
+    NotifierProvider<HaTokenNotifier, String?>(HaTokenNotifier.new);
+
+class HaTokenNotifier extends Notifier<String?> {
+  static const _key = 'ha_token';
+
+  @override
+  String? build() {
+    Future.microtask(_load);
+    return null;
+  }
+
+  Future<void> _load() async {
+    final prefs = await ref.read(sharedPreferencesProvider.future);
+    state = prefs.getString(_key);
+  }
+
+  Future<void> set(String? value) async {
+    final prefs = await ref.read(sharedPreferencesProvider.future);
+    if (value == null || value.isEmpty) {
+      await prefs.remove(_key);
+      state = null;
+    } else {
+      await prefs.setString(_key, value);
+      state = value;
+    }
+  }
+}
+
 final sheetsSpreadsheetIdProvider =
     NotifierProvider<SpreadsheetIdNotifier, String?>(SpreadsheetIdNotifier.new);
 

@@ -668,6 +668,78 @@ abstract class AppLocalizations {
   /// **'{count} days worn'**
   String daysWorn(int count);
 
+  /// No description provided for @homeAssistant.
+  ///
+  /// In en, this message translates to:
+  /// **'Home Assistant'**
+  String get homeAssistant;
+
+  /// No description provided for @haEnable.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Home Assistant'**
+  String get haEnable;
+
+  /// No description provided for @haConfigureConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Configure connection'**
+  String get haConfigureConnection;
+
+  /// No description provided for @haUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Home Assistant URL'**
+  String get haUrl;
+
+  /// No description provided for @haUrlHint.
+  ///
+  /// In en, this message translates to:
+  /// **'https://your-instance.ui.nabu.casa'**
+  String get haUrlHint;
+
+  /// No description provided for @haToken.
+  ///
+  /// In en, this message translates to:
+  /// **'Long-Lived Access Token'**
+  String get haToken;
+
+  /// No description provided for @haTokenHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Token from HA profile → Security'**
+  String get haTokenHint;
+
+  /// No description provided for @haTestConnection.
+  ///
+  /// In en, this message translates to:
+  /// **'Test connection'**
+  String get haTestConnection;
+
+  /// No description provided for @haConnectionSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection successful'**
+  String get haConnectionSuccess;
+
+  /// No description provided for @haConnectionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection failed'**
+  String get haConnectionFailed;
+
+  /// No description provided for @haSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get haSave;
+
+  /// No description provided for @haNotConfigured.
+  ///
+  /// In en, this message translates to:
+  /// **'Not configured'**
+  String get haNotConfigured;
+
   /// No description provided for @nfcLinked.
   ///
   /// In en, this message translates to:

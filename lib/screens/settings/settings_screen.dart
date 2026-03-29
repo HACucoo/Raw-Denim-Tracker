@@ -11,6 +11,7 @@ import '../../repositories/wear_day_repository.dart';
 import '../../services/widget_service.dart';
 import '../../repositories/wash_repository.dart';
 import '../../services/backup_service.dart';
+import '../../services/ha_service.dart';
 import '../../services/sheets_service.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -23,6 +24,9 @@ class SettingsScreen extends ConsumerWidget {
     final spreadsheetId = ref.watch(sheetsSpreadsheetIdProvider);
     final widgetItemId = ref.watch(widgetSelectedItemIdProvider);
     final itemsAsync = ref.watch(itemsProvider);
+    final haEnabled = ref.watch(haEnabledProvider);
+    final haUrl = ref.watch(haUrlProvider);
+    final haToken = ref.watch(haTokenProvider);
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.settings)),
@@ -102,6 +106,31 @@ class SettingsScreen extends ConsumerWidget {
                 onTap: () => _unlinkSpreadsheet(context, ref),
               ),
           ],
+
+          const Divider(),
+
+          // --- HOME ASSISTANT ---
+          _SectionHeader(l10n.homeAssistant),
+          SwitchListTile(
+            secondary: const Icon(Icons.home_outlined),
+            title: Text(l10n.haEnable),
+            value: haEnabled,
+            onChanged: (val) => ref.read(haEnabledProvider.notifier).set(val),
+          ),
+          if (haEnabled)
+            ListTile(
+              leading: const Icon(Icons.settings_ethernet_outlined),
+              title: Text(l10n.haConfigureConnection),
+              subtitle: Text(
+                haUrl ?? l10n.haNotConfigured,
+                overflow: TextOverflow.ellipsis,
+              ),
+              trailing: haUrl != null && haToken != null
+                  ? Icon(Icons.check_circle_outline,
+                      color: Theme.of(context).colorScheme.primary)
+                  : null,
+              onTap: () => _configureHa(context, ref, haUrl, haToken),
+            ),
         ],
       ),
     );
@@ -299,6 +328,96 @@ class SettingsScreen extends ConsumerWidget {
         );
       }
     }
+  }
+
+  Future<void> _configureHa(
+      BuildContext context, WidgetRef ref, String? currentUrl, String? currentToken) async {
+    final l10n = AppLocalizations.of(context)!;
+    final urlController = TextEditingController(text: currentUrl ?? '');
+    final tokenController = TextEditingController(text: currentToken ?? '');
+    bool testing = false;
+
+    await showDialog(
+      context: context,
+      useRootNavigator: true,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setState) => AlertDialog(
+          title: Text(l10n.homeAssistant),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: urlController,
+                decoration: InputDecoration(
+                  labelText: l10n.haUrl,
+                  hintText: l10n.haUrlHint,
+                  border: const OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.url,
+                autocorrect: false,
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: tokenController,
+                decoration: InputDecoration(
+                  labelText: l10n.haToken,
+                  hintText: l10n.haTokenHint,
+                  border: const OutlineInputBorder(),
+                ),
+                obscureText: true,
+                autocorrect: false,
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: testing
+                      ? null
+                      : () async {
+                          setState(() => testing = true);
+                          final ok = await HaService.testConnection(
+                            haUrl: urlController.text.trim(),
+                            token: tokenController.text.trim(),
+                          ).catchError((_) => false);
+                          setState(() => testing = false);
+                          if (!ctx.mounted) return;
+                          ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
+                            content: Text(ok
+                                ? l10n.haConnectionSuccess
+                                : l10n.haConnectionFailed),
+                          ));
+                        },
+                  icon: testing
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2))
+                      : const Icon(Icons.wifi_tethering_outlined),
+                  label: Text(l10n.haTestConnection),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(l10n.cancel),
+            ),
+            FilledButton(
+              onPressed: () async {
+                await ref.read(haUrlProvider.notifier).set(urlController.text.trim());
+                await ref.read(haTokenProvider.notifier).set(tokenController.text.trim());
+                if (ctx.mounted) Navigator.pop(ctx);
+              },
+              child: Text(l10n.haSave),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    urlController.dispose();
+    tokenController.dispose();
   }
 
   Future<void> _syncNow(BuildContext context, WidgetRef ref) async {

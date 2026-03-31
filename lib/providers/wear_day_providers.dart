@@ -1,11 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import '../models/wear_day.dart';
 import '../repositories/item_repository.dart';
 import '../repositories/wear_day_repository.dart';
 import '../services/ha_service.dart';
 import 'item_providers.dart';
-import 'settings_providers.dart';
 
 final wearDayRepositoryProvider = Provider<WearDayRepository>((_) => WearDayRepository());
 
@@ -48,11 +48,14 @@ class WearDayActions {
   }
 
   /// Fire-and-forget HA update — failures are silently ignored.
+  /// Reads directly from SharedPreferences to avoid race conditions with
+  /// provider initialisation (providers load asynchronously via microtask).
   Future<void> _pushToHa(String itemId) async {
-    final haEnabled = _ref.read(haEnabledProvider);
+    final prefs = await SharedPreferences.getInstance();
+    final haEnabled = prefs.getBool('ha_enabled') ?? false;
     if (!haEnabled) return;
-    final haUrl = _ref.read(haUrlProvider);
-    final haToken = _ref.read(haTokenProvider);
+    final haUrl = prefs.getString('ha_url');
+    final haToken = prefs.getString('ha_token');
     if (haUrl == null || haToken == null) return;
 
     final item = await _itemRepo.getById(itemId);

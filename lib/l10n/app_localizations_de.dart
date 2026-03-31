@@ -353,6 +353,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get haNotConfigured => 'Nicht konfiguriert';
 
   @override
+  String get haSendNow => 'Jetzt senden';
+
+  @override
+  String get haSendNowSuccess => 'An Home Assistant gesendet';
+
+  @override
+  String get haSendNowFailed =>
+      'Nichts zu senden – noch keine Tragetage erfasst';
+
+  @override
   String get nfcLinked => 'NFC verknüpft';
 
   @override

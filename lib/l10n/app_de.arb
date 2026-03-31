@@ -122,6 +122,9 @@
   "haConnectionFailed": "Verbindung fehlgeschlagen",
   "haSave": "Speichern",
   "haNotConfigured": "Nicht konfiguriert",
+  "haSendNow": "Jetzt senden",
+  "haSendNowSuccess": "An Home Assistant gesendet",
+  "haSendNowFailed": "Nichts zu senden – noch keine Tragetage erfasst",
   "nfcLinked": "NFC verknüpft",
   "camera": "Kamera",
   "gallery": "Galerie"

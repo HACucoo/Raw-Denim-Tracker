@@ -117,7 +117,7 @@ class SettingsScreen extends ConsumerWidget {
             value: haEnabled,
             onChanged: (val) => ref.read(haEnabledProvider.notifier).set(val),
           ),
-          if (haEnabled)
+          if (haEnabled) ...[
             ListTile(
               leading: const Icon(Icons.settings_ethernet_outlined),
               title: Text(l10n.haConfigureConnection),
@@ -131,6 +131,13 @@ class SettingsScreen extends ConsumerWidget {
                   : null,
               onTap: () => _configureHa(context, ref, haUrl, haToken),
             ),
+            if (haUrl != null && haToken != null)
+              ListTile(
+                leading: const Icon(Icons.send_outlined),
+                title: Text(l10n.haSendNow),
+                onTap: () => _sendToHaNow(context, ref, haUrl, haToken),
+              ),
+          ],
         ],
       ),
     );
@@ -327,6 +334,39 @@ class SettingsScreen extends ConsumerWidget {
           ),
         );
       }
+    }
+  }
+
+  Future<void> _sendToHaNow(
+      BuildContext context, WidgetRef ref, String haUrl, String haToken) async {
+    final l10n = AppLocalizations.of(context)!;
+    // Find the most recently worn item across all items.
+    final lastWornDates = await ref.read(wearDayRepositoryProvider).getLastWornDates();
+    if (lastWornDates.isEmpty) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.haSendNowFailed)));
+      }
+      return;
+    }
+    // Pick the item worn most recently.
+    final latestEntry = lastWornDates.entries.reduce(
+        (a, b) => a.value.isAfter(b.value) ? a : b);
+    final itemId = latestEntry.key;
+    final item = await ref.read(itemRepositoryProvider).getById(itemId);
+    if (item == null) return;
+    final tracked = await ref.read(wearDayRepositoryProvider).countByItemId(itemId);
+    final totalDays = item.baseWearCount + tracked;
+    final ok = await HaService.updateCurrentItem(
+      haUrl: haUrl,
+      token: haToken,
+      itemName: '${item.brand} ${item.model}',
+      wearDays: totalDays,
+    ).catchError((_) => false);
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(ok ? l10n.haSendNowSuccess : l10n.haConnectionFailed),
+      ));
     }
   }
 

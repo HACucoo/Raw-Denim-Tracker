@@ -740,6 +740,24 @@ abstract class AppLocalizations {
   /// **'Not configured'**
   String get haNotConfigured;
 
+  /// No description provided for @haSendNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Send now'**
+  String get haSendNow;
+
+  /// No description provided for @haSendNowSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent to Home Assistant'**
+  String get haSendNowSuccess;
+
+  /// No description provided for @haSendNowFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing to send – no wear days recorded yet'**
+  String get haSendNowFailed;
+
   /// No description provided for @nfcLinked.
   ///
   /// In en, this message translates to:

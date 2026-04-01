@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:raw_denim_tracker/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -166,6 +168,73 @@ class _WearDayTileState extends ConsumerState<_WearDayTile> {
         .updateWearDay(widget.itemId, widget.wearDay.copyWith(date: date));
   }
 
+  void _showLocationMap(BuildContext context, AppLocalizations l10n) {
+    final lat = widget.wearDay.latitude!;
+    final lng = widget.wearDay.longitude!;
+    final point = LatLng(lat, lng);
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) => SizedBox(
+        height: MediaQuery.of(ctx).size.height * 0.5,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Row(
+                children: [
+                  Icon(Icons.location_on_outlined,
+                      color: Theme.of(ctx).colorScheme.primary, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    l10n.wearDayLocation,
+                    style: Theme.of(ctx).textTheme.titleMedium,
+                  ),
+                  const Spacer(),
+                  Text(
+                    '${lat.toStringAsFixed(5)}, ${lng.toStringAsFixed(5)}',
+                    style: Theme.of(ctx).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(ctx).colorScheme.outline,
+                        ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: FlutterMap(
+                options: MapOptions(initialCenter: point, initialZoom: 13),
+                children: [
+                  TileLayer(
+                    urlTemplate:
+                        'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    userAgentPackageName: 'app.rawdenim.tracker',
+                  ),
+                  MarkerLayer(
+                    markers: [
+                      Marker(
+                        point: point,
+                        width: 40,
+                        height: 40,
+                        child: Icon(
+                          Icons.location_pin,
+                          color: Theme.of(ctx).colorScheme.error,
+                          size: 40,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -177,23 +246,35 @@ class _WearDayTileState extends ConsumerState<_WearDayTile> {
             color: Theme.of(context).colorScheme.onPrimaryContainer, size: 20),
       ),
       title: Text(DateFormat.yMMMMd(Localizations.localeOf(context).languageCode).format(widget.wearDay.date)),
-      trailing: PopupMenuButton<String>(
-        onSelected: (value) async {
-          if (value == 'edit') {
-            await _editDate();
-          } else if (value == 'delete') {
-            await ref
-                .read(wearDayActionsProvider)
-                .deleteWearDay(widget.itemId, widget.wearDay.id);
-          }
-        },
-        itemBuilder: (_) => [
-          PopupMenuItem(value: 'edit', child: Text(l10n.edit)),
-          PopupMenuItem(
-            value: 'delete',
-            child: Text(l10n.delete,
-                style:
-                    TextStyle(color: Theme.of(context).colorScheme.error)),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (widget.wearDay.hasLocation)
+            IconButton(
+              icon: Icon(Icons.location_on_outlined,
+                  color: Theme.of(context).colorScheme.primary, size: 20),
+              onPressed: () => _showLocationMap(context, l10n),
+              visualDensity: VisualDensity.compact,
+            ),
+          PopupMenuButton<String>(
+            onSelected: (value) async {
+              if (value == 'edit') {
+                await _editDate();
+              } else if (value == 'delete') {
+                await ref
+                    .read(wearDayActionsProvider)
+                    .deleteWearDay(widget.itemId, widget.wearDay.id);
+              }
+            },
+            itemBuilder: (_) => [
+              PopupMenuItem(value: 'edit', child: Text(l10n.edit)),
+              PopupMenuItem(
+                value: 'delete',
+                child: Text(l10n.delete,
+                    style:
+                        TextStyle(color: Theme.of(context).colorScheme.error)),
+              ),
+            ],
           ),
         ],
       ),

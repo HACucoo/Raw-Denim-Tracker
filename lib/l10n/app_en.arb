@@ -125,6 +125,7 @@
   "haSendNow": "Send now",
   "haSendNowSuccess": "Sent to Home Assistant",
   "haSendNowFailed": "Nothing to send – no wear days recorded yet",
+  "wearDayLocation": "Location",
   "nfcLinked": "NFC linked",
   "camera": "Camera",
   "gallery": "Gallery"

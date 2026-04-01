@@ -758,6 +758,12 @@ abstract class AppLocalizations {
   /// **'Nothing to send – no wear days recorded yet'**
   String get haSendNowFailed;
 
+  /// No description provided for @wearDayLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get wearDayLocation;
+
   /// No description provided for @nfcLinked.
   ///
   /// In en, this message translates to:

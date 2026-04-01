@@ -75,8 +75,8 @@ class SheetsService {
           ValueRange(range: 'Items!A1:K1', values: [
             ['id', 'brand', 'model', 'size', 'first_wear_date', 'notes', 'nfc_tag_id', 'created_at', 'photo_path', 'base_wear_count', 'total_wear_days']
           ]),
-          ValueRange(range: 'WearDays!A1:E1', values: [
-            ['id', 'item_id', 'brand', 'model', 'date']
+          ValueRange(range: 'WearDays!A1:G1', values: [
+            ['id', 'item_id', 'brand', 'model', 'date', 'latitude', 'longitude']
           ]),
           ValueRange(range: 'Washes!A1:D1', values: [
             ['id', 'item_id', 'date', 'temp_celsius']
@@ -186,9 +186,9 @@ class SheetsService {
 
     // Ensure WearDays header has brand/model columns (migration for older sheets)
     await api.spreadsheets.values.update(
-      ValueRange(values: [['id', 'item_id', 'brand', 'model', 'date']]),
+      ValueRange(values: [['id', 'item_id', 'brand', 'model', 'date', 'latitude', 'longitude']]),
       spreadsheetId,
-      'WearDays!A1:E1',
+      'WearDays!A1:G1',
       valueInputOption: 'RAW',
     );
 
@@ -246,6 +246,8 @@ class SheetsService {
             item?.brand ?? '',
             item?.model ?? '',
             w.date.toIso8601String(),
+            w.latitude ?? '',
+            w.longitude ?? '',
           ];
         }).toList(),
       ));

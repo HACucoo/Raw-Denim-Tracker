@@ -354,6 +354,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get haSendNowFailed => 'Nothing to send – no wear days recorded yet';
 
   @override
+  String get wearDayLocation => 'Location';
+
+  @override
   String get nfcLinked => 'NFC linked';
 
   @override

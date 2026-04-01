@@ -354,6 +354,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get haSendNowFailed => 'Nothing to send – no wear days recorded yet';
 
   @override
+  String get locationTracking => 'Location Tracking';
+
+  @override
+  String get locationTrackingEnable => "Record location when logging today's wear day";
+
+  @override
   String get wearDayLocation => 'Location';
 
   @override

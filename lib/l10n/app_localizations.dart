@@ -758,6 +758,18 @@ abstract class AppLocalizations {
   /// **'Nothing to send – no wear days recorded yet'**
   String get haSendNowFailed;
 
+  /// No description provided for @locationTracking.
+  ///
+  /// In en, this message translates to:
+  /// **'Location Tracking'**
+  String get locationTracking;
+
+  /// No description provided for @locationTrackingEnable.
+  ///
+  /// In en, this message translates to:
+  /// **'Record location when logging today\'s wear day'**
+  String get locationTrackingEnable;
+
   /// No description provided for @wearDayLocation.
   ///
   /// In en, this message translates to:

@@ -58,6 +58,32 @@ class SheetsEnabledNotifier extends Notifier<bool> {
   }
 }
 
+// --- LOCATION ---
+
+final locationEnabledProvider =
+    NotifierProvider<LocationEnabledNotifier, bool>(LocationEnabledNotifier.new);
+
+class LocationEnabledNotifier extends Notifier<bool> {
+  static const _key = 'location_enabled';
+
+  @override
+  bool build() {
+    Future.microtask(_load);
+    return false;
+  }
+
+  Future<void> _load() async {
+    final prefs = await ref.read(sharedPreferencesProvider.future);
+    state = prefs.getBool(_key) ?? false;
+  }
+
+  Future<void> set(bool value) async {
+    final prefs = await ref.read(sharedPreferencesProvider.future);
+    await prefs.setBool(_key, value);
+    state = value;
+  }
+}
+
 // --- HOME ASSISTANT ---
 
 final haEnabledProvider =

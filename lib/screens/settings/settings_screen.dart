@@ -24,6 +24,7 @@ class SettingsScreen extends ConsumerWidget {
     final spreadsheetId = ref.watch(sheetsSpreadsheetIdProvider);
     final widgetItemId = ref.watch(widgetSelectedItemIdProvider);
     final itemsAsync = ref.watch(itemsProvider);
+    final locationEnabled = ref.watch(locationEnabledProvider);
     final haEnabled = ref.watch(haEnabledProvider);
     final haUrl = ref.watch(haUrlProvider);
     final haToken = ref.watch(haTokenProvider);
@@ -106,6 +107,20 @@ class SettingsScreen extends ConsumerWidget {
                 onTap: () => _unlinkSpreadsheet(context, ref),
               ),
           ],
+
+          const Divider(),
+
+          const Divider(),
+
+          // --- LOCATION ---
+          _SectionHeader(l10n.locationTracking),
+          SwitchListTile(
+            secondary: const Icon(Icons.location_on_outlined),
+            title: Text(l10n.locationTrackingEnable),
+            value: locationEnabled,
+            onChanged: (val) =>
+                ref.read(locationEnabledProvider.notifier).set(val),
+          ),
 
           const Divider(),
 

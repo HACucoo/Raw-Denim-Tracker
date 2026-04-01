@@ -40,7 +40,11 @@ class WearDayActions {
   /// Returns true if the wear day was inserted, false if it already existed.
   Future<bool> addWearDay(String itemId, DateTime date) async {
     if (await _repo.existsForDate(itemId, date)) return false;
-    final (lat, lng) = await _currentLocation();
+    final today = DateTime.now();
+    final isToday = date.year == today.year &&
+        date.month == today.month &&
+        date.day == today.day;
+    final (lat, lng) = isToday ? await _currentLocation() : (null, null);
     await _repo.insert(WearDay(
       id: _uuid.v4(),
       itemId: itemId,
@@ -58,6 +62,8 @@ class WearDayActions {
   /// Best-effort location capture with 5-second timeout. Returns (null, null) on failure.
   Future<(double?, double?)> _currentLocation() async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      if (!(prefs.getBool('location_enabled') ?? false)) return (null, null);
       var permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();

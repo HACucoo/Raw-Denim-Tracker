@@ -363,6 +363,12 @@ class AppLocalizationsDe extends AppLocalizations {
       'Nichts zu senden – noch keine Tragetage erfasst';
 
   @override
+  String get locationTracking => 'Standort-Tracking';
+
+  @override
+  String get locationTrackingEnable => 'Standort bei heutigem Tragetag erfassen';
+
+  @override
   String get wearDayLocation => 'Standort';
 
   @override

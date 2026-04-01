@@ -10,7 +10,9 @@ An Android app for tracking raw denim garments — wear days, washes, and fading
 - **Quick log from home screen** — Add today's wear day directly from the garment list without opening the detail view
 - **NFC tag support** — Link an NFC tag to a garment; scanning it automatically logs a wear day for today
 - **Home screen widget** — Glanceable wear day count for your selected garment, right on your home screen
-- **Google Sheets sync** — Export all data to a Google Sheet with a Dashboard, per-item stats, and a wear day chart
+- **Home Assistant integration** — Pushes the currently worn garment (name + total wear days) to a Home Assistant sensor via REST API
+- **Location tracking** — Optionally records your location when logging a wear day; tap the pin icon on any entry to see it on an OpenStreetMap map
+- **Google Sheets sync** — Export all data to a Google Sheet with a Dashboard, per-item stats, wear day chart, and coordinates
 - **Backup & restore** — Export and import a full JSON backup of all your data
 - **Sorting** — Sort garments by first worn date, wear days, brand, or last worn — ascending or descending
 
@@ -22,4 +24,4 @@ Get the latest APK from the [Releases](https://github.com/HACucoo/Raw-Denim-Trac
 
 ## Tech Stack
 
-Flutter · Riverpod · SQLite · Google Sheets API · NFC Manager · Home Widget
+Flutter · Riverpod · SQLite · Google Sheets API · NFC Manager · Home Widget · Geolocator · flutter_map (OpenStreetMap)

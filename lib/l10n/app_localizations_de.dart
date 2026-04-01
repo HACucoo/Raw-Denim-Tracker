@@ -363,6 +363,9 @@ class AppLocalizationsDe extends AppLocalizations {
       'Nichts zu senden – noch keine Tragetage erfasst';
 
   @override
+  String get wearDayLocation => 'Standort';
+
+  @override
   String get nfcLinked => 'NFC verknüpft';
 
   @override

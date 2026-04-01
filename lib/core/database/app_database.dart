@@ -17,7 +17,7 @@ class AppDatabase {
     final path = join(dbPath, 'raw_denim_tracker.db');
     return openDatabase(
       path,
-      version: 3,
+      version: 4,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -44,6 +44,8 @@ class AppDatabase {
         id TEXT PRIMARY KEY,
         item_id TEXT NOT NULL,
         date TEXT NOT NULL,
+        latitude REAL,
+        longitude REAL,
         FOREIGN KEY (item_id) REFERENCES items (id) ON DELETE CASCADE
       )
     ''');
@@ -74,6 +76,10 @@ class AppDatabase {
       await db.execute(
         'ALTER TABLE washes ADD COLUMN wear_days_at_wash INTEGER',
       );
+    }
+    if (oldVersion < 4) {
+      await db.execute('ALTER TABLE wear_days ADD COLUMN latitude REAL');
+      await db.execute('ALTER TABLE wear_days ADD COLUMN longitude REAL');
     }
   }
 

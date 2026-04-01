@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import '../models/wear_day.dart';
@@ -39,12 +40,42 @@ class WearDayActions {
   /// Returns true if the wear day was inserted, false if it already existed.
   Future<bool> addWearDay(String itemId, DateTime date) async {
     if (await _repo.existsForDate(itemId, date)) return false;
-    await _repo.insert(WearDay(id: _uuid.v4(), itemId: itemId, date: date));
+    final (lat, lng) = await _currentLocation();
+    await _repo.insert(WearDay(
+      id: _uuid.v4(),
+      itemId: itemId,
+      date: date,
+      latitude: lat,
+      longitude: lng,
+    ));
     _ref.invalidate(wearDaysProvider(itemId));
     _ref.invalidate(wearDayCountProvider(itemId));
     _ref.invalidate(lastWearDateProvider(itemId));
     _pushToHa(itemId);
     return true;
+  }
+
+  /// Best-effort location capture with 5-second timeout. Returns (null, null) on failure.
+  Future<(double?, double?)> _currentLocation() async {
+    try {
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        return (null, null);
+      }
+      final pos = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.low,
+          timeLimit: Duration(seconds: 5),
+        ),
+      );
+      return (pos.latitude, pos.longitude);
+    } catch (_) {
+      return (null, null);
+    }
   }
 
   /// Fire-and-forget HA update — failures are silently ignored.

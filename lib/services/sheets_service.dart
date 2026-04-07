@@ -190,6 +190,10 @@ class SheetsService {
         valueInputOption: 'RAW',
         data: [
           ValueRange(
+            range: 'Items!A1:L1',
+            values: [['id', 'brand', 'model', 'size', 'first_wear_date', 'notes', 'nfc_tag_id', 'created_at', 'photo_path', 'base_wear_count', 'total_wear_days', 'category']],
+          ),
+          ValueRange(
             range: 'WearDays!A1:G1',
             values: [['id', 'item_id', 'brand', 'model', 'date', 'latitude', 'longitude']],
           ),

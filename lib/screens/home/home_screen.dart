@@ -7,6 +7,17 @@ import '../../models/item.dart';
 import '../../providers/sort_providers.dart';
 import 'item_card.dart';
 
+// Maps each ItemCategory to its localized label via l10n.
+String _categoryLabel(ItemCategory cat, AppLocalizations l10n) {
+  switch (cat) {
+    case ItemCategory.jeans: return l10n.categoryJeans;
+    case ItemCategory.hemd: return l10n.categoryHemd;
+    case ItemCategory.jacke: return l10n.categoryJacke;
+    case ItemCategory.hose: return l10n.categoryHose;
+    case ItemCategory.sonstiges: return l10n.categorySonstiges;
+  }
+}
+
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -36,6 +47,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final sortOrder = ref.watch(sortOrderProvider);
     final sortDirection = ref.watch(sortDirectionProvider);
     final latestOnTop = ref.watch(latestOnTopProvider);
+    final categoryFilter = ref.watch(categoryFilterProvider);
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
@@ -108,7 +120,39 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ],
       ),
-      body: itemsAsync.when(
+      body: Column(
+        children: [
+          // --- Category filter chips ---
+          SizedBox(
+            height: 48,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: FilterChip(
+                    label: Text(l10n.categoryAll),
+                    selected: categoryFilter == null,
+                    onSelected: (_) =>
+                        ref.read(categoryFilterProvider.notifier).set(null),
+                  ),
+                ),
+                ...ItemCategory.values.map((cat) => Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: FilterChip(
+                        label: Text(_categoryLabel(cat, l10n)),
+                        selected: categoryFilter == cat,
+                        onSelected: (_) => ref
+                            .read(categoryFilterProvider.notifier)
+                            .set(categoryFilter == cat ? null : cat),
+                      ),
+                    )),
+              ],
+            ),
+          ),
+          Expanded(
+            child: itemsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Fehler: $e')),
         data: (items) {
@@ -138,6 +182,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             itemBuilder: (context, index) => ItemCard(item: items[index]),
           );
         },
+      ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => context.push('/item/new'),

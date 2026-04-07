@@ -17,7 +17,7 @@ class AppDatabase {
     final path = join(dbPath, 'raw_denim_tracker.db');
     return openDatabase(
       path,
-      version: 4,
+      version: 5,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -35,7 +35,8 @@ class AppDatabase {
         photo_path TEXT,
         nfc_tag_id TEXT,
         created_at TEXT NOT NULL,
-        base_wear_count INTEGER NOT NULL DEFAULT 0
+        base_wear_count INTEGER NOT NULL DEFAULT 0,
+        category TEXT
       )
     ''');
 
@@ -80,6 +81,9 @@ class AppDatabase {
     if (oldVersion < 4) {
       await db.execute('ALTER TABLE wear_days ADD COLUMN latitude REAL');
       await db.execute('ALTER TABLE wear_days ADD COLUMN longitude REAL');
+    }
+    if (oldVersion < 5) {
+      await db.execute('ALTER TABLE items ADD COLUMN category TEXT');
     }
   }
 

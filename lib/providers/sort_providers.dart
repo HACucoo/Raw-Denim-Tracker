@@ -3,6 +3,15 @@ import '../models/item.dart';
 import '../repositories/wear_day_repository.dart';
 import 'item_providers.dart';
 
+final categoryFilterProvider =
+    NotifierProvider<CategoryFilterNotifier, ItemCategory?>(CategoryFilterNotifier.new);
+
+class CategoryFilterNotifier extends Notifier<ItemCategory?> {
+  @override
+  ItemCategory? build() => null;
+  void set(ItemCategory? value) => state = value;
+}
+
 enum SortOrder { firstWearDate, wearCount, brand, lastWorn }
 
 enum SortDirection { ascending, descending }
@@ -40,13 +49,17 @@ class LatestOnTopNotifier extends Notifier<bool> {
 }
 
 /// Items sorted according to [sortOrderProvider] and [sortDirectionProvider],
-/// with optional [latestOnTopProvider] pin.
+/// with optional [latestOnTopProvider] pin and [categoryFilterProvider] filter.
 final sortedItemsProvider = FutureProvider<List<Item>>((ref) async {
   final itemsAsync = await ref.watch(itemsProvider.future);
   final sortOrder = ref.watch(sortOrderProvider);
   final sortDirection = ref.watch(sortDirectionProvider);
   final latestOnTop = ref.watch(latestOnTopProvider);
-  final items = List<Item>.from(itemsAsync);
+  final categoryFilter = ref.watch(categoryFilterProvider);
+  var items = List<Item>.from(itemsAsync);
+  if (categoryFilter != null) {
+    items = items.where((i) => i.category == categoryFilter).toList();
+  }
 
   final repo = WearDayRepository();
 

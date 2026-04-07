@@ -758,6 +758,33 @@ abstract class AppLocalizations {
   /// **'Nothing to send – no wear days recorded yet'**
   String get haSendNowFailed;
 
+  /// No description provided for @category.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get category;
+
+  /// No description provided for @categoryAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get categoryAll;
+
+  /// No description provided for @categoryJeans.
+  String get categoryJeans;
+
+  /// No description provided for @categoryHemd.
+  String get categoryHemd;
+
+  /// No description provided for @categoryJacke.
+  String get categoryJacke;
+
+  /// No description provided for @categoryHose.
+  String get categoryHose;
+
+  /// No description provided for @categorySonstiges.
+  String get categorySonstiges;
+
   /// No description provided for @preferences.
   ///
   /// In en, this message translates to:

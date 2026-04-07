@@ -363,6 +363,27 @@ class AppLocalizationsDe extends AppLocalizations {
       'Nichts zu senden – noch keine Tragetage erfasst';
 
   @override
+  String get category => 'Kategorie';
+
+  @override
+  String get categoryAll => 'Alle';
+
+  @override
+  String get categoryJeans => 'Jeans';
+
+  @override
+  String get categoryHemd => 'Hemd';
+
+  @override
+  String get categoryJacke => 'Jacke';
+
+  @override
+  String get categoryHose => 'Hose';
+
+  @override
+  String get categorySonstiges => 'Sonstiges';
+
+  @override
   String get preferences => 'Voreinstellungen';
 
   @override

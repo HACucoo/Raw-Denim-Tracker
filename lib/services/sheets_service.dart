@@ -78,8 +78,8 @@ class SheetsService {
           ValueRange(range: 'WearDays!A1:G1', values: [
             ['id', 'item_id', 'brand', 'model', 'date', 'latitude', 'longitude']
           ]),
-          ValueRange(range: 'Washes!A1:F1', values: [
-            ['id', 'item_id', 'brand', 'model', 'date', 'temp_celsius']
+          ValueRange(range: 'Washes!A1:G1', values: [
+            ['id', 'item_id', 'brand', 'model', 'date', 'temp_celsius', 'wear_days_at_wash']
           ]),
         ],
       ),
@@ -198,8 +198,8 @@ class SheetsService {
             values: [['id', 'item_id', 'brand', 'model', 'date', 'latitude', 'longitude']],
           ),
           ValueRange(
-            range: 'Washes!A1:F1',
-            values: [['id', 'item_id', 'brand', 'model', 'date', 'temp_celsius']],
+            range: 'Washes!A1:G1',
+            values: [['id', 'item_id', 'brand', 'model', 'date', 'temp_celsius', 'wear_days_at_wash']],
           ),
         ],
       ),
@@ -281,6 +281,7 @@ class SheetsService {
             item?.model ?? '',
             w.date.toIso8601String(),
             w.tempCelsius,
+            w.wearDaysAtWash ?? '',
           ];
         }).toList(),
       ));

@@ -15,6 +15,7 @@ An Android app for tracking raw denim garments — wear days, washes, and fading
 - **Google Sheets sync** — Export all data to a Google Sheet with a Dashboard, per-item stats, wear day chart, and coordinates
 - **Backup & restore** — Export and import a full JSON backup of all your data
 - **Sorting** — Sort garments by first worn date, wear days, brand, or last worn — ascending or descending
+- **Categories** — Optionally assign a category to each garment (Jeans, Shirt, Jacket, Trousers, Other) and filter the list by category
 
 ## Download
 

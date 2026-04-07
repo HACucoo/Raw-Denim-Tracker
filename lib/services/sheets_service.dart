@@ -78,8 +78,8 @@ class SheetsService {
           ValueRange(range: 'WearDays!A1:G1', values: [
             ['id', 'item_id', 'brand', 'model', 'date', 'latitude', 'longitude']
           ]),
-          ValueRange(range: 'Washes!A1:D1', values: [
-            ['id', 'item_id', 'date', 'temp_celsius']
+          ValueRange(range: 'Washes!A1:F1', values: [
+            ['id', 'item_id', 'brand', 'model', 'date', 'temp_celsius']
           ]),
         ],
       ),
@@ -184,12 +184,22 @@ class SheetsService {
       spreadsheetId,
     );
 
-    // Ensure WearDays header has brand/model columns (migration for older sheets)
-    await api.spreadsheets.values.update(
-      ValueRange(values: [['id', 'item_id', 'brand', 'model', 'date', 'latitude', 'longitude']]),
+    // Ensure headers are up to date (migration for older sheets)
+    await api.spreadsheets.values.batchUpdate(
+      BatchUpdateValuesRequest(
+        valueInputOption: 'RAW',
+        data: [
+          ValueRange(
+            range: 'WearDays!A1:G1',
+            values: [['id', 'item_id', 'brand', 'model', 'date', 'latitude', 'longitude']],
+          ),
+          ValueRange(
+            range: 'Washes!A1:F1',
+            values: [['id', 'item_id', 'brand', 'model', 'date', 'temp_celsius']],
+          ),
+        ],
+      ),
       spreadsheetId,
-      'WearDays!A1:G1',
-      valueInputOption: 'RAW',
     );
 
     final data = <ValueRange>[];
@@ -257,9 +267,17 @@ class SheetsService {
     if (washes.isNotEmpty) {
       data.add(ValueRange(
         range: 'Washes!A2',
-        values: washes
-            .map((w) => [w.id, w.itemId, w.date.toIso8601String(), w.tempCelsius])
-            .toList(),
+        values: washes.map((w) {
+          final item = itemById[w.itemId];
+          return [
+            w.id,
+            w.itemId,
+            item?.brand ?? '',
+            item?.model ?? '',
+            w.date.toIso8601String(),
+            w.tempCelsius,
+          ];
+        }).toList(),
       ));
     }
 

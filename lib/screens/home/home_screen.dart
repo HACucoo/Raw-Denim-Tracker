@@ -4,6 +4,7 @@ import 'package:raw_denim_tracker/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../models/item.dart';
+import '../../providers/settings_providers.dart';
 import '../../providers/sort_providers.dart';
 import 'item_card.dart';
 
@@ -48,6 +49,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final sortDirection = ref.watch(sortDirectionProvider);
     final latestOnTop = ref.watch(latestOnTopProvider);
     final categoryFilter = ref.watch(categoryFilterProvider);
+    final categoriesEnabled = ref.watch(categoriesEnabledProvider);
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
@@ -123,7 +125,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       body: Column(
         children: [
           // --- Category filter chips ---
-          SizedBox(
+          if (categoriesEnabled) SizedBox(
             height: 48,
             child: ListView(
               scrollDirection: Axis.horizontal,

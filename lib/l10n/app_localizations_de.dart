@@ -384,6 +384,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get categorySonstiges => 'Sonstiges';
 
   @override
+  String get categoriesEnabled => 'Kategorien verwenden';
+
+  @override
+  String get trackWearDaysSetting => 'Tragetage erfassen';
+
+  @override
   String get preferences => 'Voreinstellungen';
 
   @override

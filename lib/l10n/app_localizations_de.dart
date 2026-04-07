@@ -363,10 +363,17 @@ class AppLocalizationsDe extends AppLocalizations {
       'Nichts zu senden – noch keine Tragetage erfasst';
 
   @override
+  String get preferences => 'Voreinstellungen';
+
+  @override
+  String get defaultWashTemp => 'Standard-Temperatur Wäsche';
+
+  @override
   String get locationTracking => 'Standort-Tracking';
 
   @override
-  String get locationTrackingEnable => 'Standort bei heutigem Tragetag erfassen';
+  String get locationTrackingEnable =>
+      'Standort bei heutigem Tragetag erfassen';
 
   @override
   String get wearDayLocation => 'Standort';

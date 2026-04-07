@@ -3,6 +3,7 @@ import 'package:raw_denim_tracker/l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../models/wash.dart';
+import '../../providers/settings_providers.dart';
 import '../../providers/wash_providers.dart';
 import '../../providers/wear_day_providers.dart';
 
@@ -20,6 +21,7 @@ class _WashesTabState extends ConsumerState<WashesTab> {
       context: context,
       useRootNavigator: true,
       builder: (_) => _WashDialog(
+        initialTemp: ref.read(defaultWashTempProvider),
         getWearDayCount: () =>
             ref.read(wearDayCountProvider(widget.itemId).future),
       ),
@@ -177,7 +179,7 @@ class _WashDialogState extends State<_WashDialog> {
     super.initState();
     _date = widget.initialDate ?? DateTime.now();
     _tempController = TextEditingController(
-      text: widget.initialTemp?.toString() ?? '30',
+      text: widget.initialTemp?.toString() ?? '30',  // fallback nur für Edit-Dialog
     );
     _wearDaysController = TextEditingController(
       text: widget.initialWearDays?.toString() ?? '',

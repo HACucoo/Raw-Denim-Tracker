@@ -25,6 +25,7 @@ class SettingsScreen extends ConsumerWidget {
     final widgetItemId = ref.watch(widgetSelectedItemIdProvider);
     final itemsAsync = ref.watch(itemsProvider);
     final locationEnabled = ref.watch(locationEnabledProvider);
+    final defaultWashTemp = ref.watch(defaultWashTempProvider);
     final haEnabled = ref.watch(haEnabledProvider);
     final haUrl = ref.watch(haUrlProvider);
     final haToken = ref.watch(haTokenProvider);
@@ -33,17 +34,36 @@ class SettingsScreen extends ConsumerWidget {
       appBar: AppBar(title: Text(l10n.settings)),
       body: ListView(
         children: [
-          // --- WIDGET ---
-          _SectionHeader(l10n.widget),
+          // --- VOREINSTELLUNGEN ---
+          _SectionHeader(l10n.preferences),
           itemsAsync.when(
             loading: () => const ListTile(title: Text('Loading...')),
             error: (_, __) => const SizedBox.shrink(),
             data: (items) => ListTile(
+              leading: const Icon(Icons.widgets_outlined),
               title: Text(l10n.widgetItem),
               subtitle: Text(_itemLabel(items, widgetItemId) ?? l10n.none),
               trailing: const Icon(Icons.chevron_right),
               onTap: () => _pickWidgetItem(context, ref, items, widgetItemId),
             ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.local_laundry_service_outlined),
+            title: Text(l10n.defaultWashTemp),
+            trailing: Text(
+              '$defaultWashTemp °C',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+            ),
+            onTap: () => _editDefaultWashTemp(context, ref, defaultWashTemp),
+          ),
+          SwitchListTile(
+            secondary: const Icon(Icons.location_on_outlined),
+            title: Text(l10n.locationTrackingEnable),
+            value: locationEnabled,
+            onChanged: (val) =>
+                ref.read(locationEnabledProvider.notifier).set(val),
           ),
 
           const Divider(),
@@ -107,20 +127,6 @@ class SettingsScreen extends ConsumerWidget {
                 onTap: () => _unlinkSpreadsheet(context, ref),
               ),
           ],
-
-          const Divider(),
-
-          const Divider(),
-
-          // --- LOCATION ---
-          _SectionHeader(l10n.locationTracking),
-          SwitchListTile(
-            secondary: const Icon(Icons.location_on_outlined),
-            title: Text(l10n.locationTrackingEnable),
-            value: locationEnabled,
-            onChanged: (val) =>
-                ref.read(locationEnabledProvider.notifier).set(val),
-          ),
 
           const Divider(),
 
@@ -349,6 +355,43 @@ class SettingsScreen extends ConsumerWidget {
           ),
         );
       }
+    }
+  }
+
+  Future<void> _editDefaultWashTemp(
+      BuildContext context, WidgetRef ref, int current) async {
+    final l10n = AppLocalizations.of(context)!;
+    final controller = TextEditingController(text: current.toString());
+    final result = await showDialog<int>(
+      context: context,
+      useRootNavigator: true,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.defaultWashTemp),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          decoration: InputDecoration(
+            border: const OutlineInputBorder(),
+            suffixText: '°C',
+          ),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () =>
+                Navigator.pop(ctx, int.tryParse(controller.text)),
+            child: Text(l10n.save),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (result != null && result > 0 && context.mounted) {
+      await ref.read(defaultWashTempProvider.notifier).set(result);
     }
   }
 

@@ -758,6 +758,18 @@ abstract class AppLocalizations {
   /// **'Nothing to send – no wear days recorded yet'**
   String get haSendNowFailed;
 
+  /// No description provided for @preferences.
+  ///
+  /// In en, this message translates to:
+  /// **'Preferences'**
+  String get preferences;
+
+  /// No description provided for @defaultWashTemp.
+  ///
+  /// In en, this message translates to:
+  /// **'Default wash temperature'**
+  String get defaultWashTemp;
+
   /// No description provided for @locationTracking.
   ///
   /// In en, this message translates to:

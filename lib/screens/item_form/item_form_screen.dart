@@ -27,6 +27,7 @@ class _ItemFormScreenState extends ConsumerState<ItemFormScreen> {
   DateTime _firstWearDate = DateTime.now();
   String? _photoPath;
   ItemCategory? _category;
+  bool _trackWearDays = true;
   Item? _existingItem;
   bool _loading = false;
 
@@ -52,6 +53,7 @@ class _ItemFormScreenState extends ConsumerState<ItemFormScreen> {
         _firstWearDate = item.firstWearDate;
         _photoPath = validPhotoPath;
         _category = item.category;
+        _trackWearDays = item.trackWearDays;
       });
     }
   }
@@ -136,6 +138,7 @@ class _ItemFormScreenState extends ConsumerState<ItemFormScreen> {
           notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
           photoPath: _photoPath,
           category: _category,
+          trackWearDays: _trackWearDays,
         );
       } else {
         await notifier.updateItem(_existingItem!.copyWith(
@@ -146,6 +149,7 @@ class _ItemFormScreenState extends ConsumerState<ItemFormScreen> {
           notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
           photoPath: _photoPath,
           category: _category,
+          trackWearDays: _trackWearDays,
         ));
       }
       if (mounted) context.pop();
@@ -293,6 +297,15 @@ class _ItemFormScreenState extends ConsumerState<ItemFormScreen> {
               ),
               maxLines: 4,
               textCapitalization: TextCapitalization.sentences,
+            ),
+            const SizedBox(height: 4),
+
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              secondary: const Icon(Icons.calendar_today_outlined),
+              title: Text(l10n.trackWearDaysSetting),
+              value: _trackWearDays,
+              onChanged: (val) => setState(() => _trackWearDays = val),
             ),
           ],
         ),

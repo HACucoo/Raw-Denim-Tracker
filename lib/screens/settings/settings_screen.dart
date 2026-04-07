@@ -24,6 +24,7 @@ class SettingsScreen extends ConsumerWidget {
     final spreadsheetId = ref.watch(sheetsSpreadsheetIdProvider);
     final widgetItemId = ref.watch(widgetSelectedItemIdProvider);
     final itemsAsync = ref.watch(itemsProvider);
+    final categoriesEnabled = ref.watch(categoriesEnabledProvider);
     final locationEnabled = ref.watch(locationEnabledProvider);
     final defaultWashTemp = ref.watch(defaultWashTempProvider);
     final haEnabled = ref.watch(haEnabledProvider);
@@ -57,6 +58,13 @@ class SettingsScreen extends ConsumerWidget {
                   ),
             ),
             onTap: () => _editDefaultWashTemp(context, ref, defaultWashTemp),
+          ),
+          SwitchListTile(
+            secondary: const Icon(Icons.label_outline),
+            title: Text(l10n.categoriesEnabled),
+            value: categoriesEnabled,
+            onChanged: (val) =>
+                ref.read(categoriesEnabledProvider.notifier).set(val),
           ),
           SwitchListTile(
             secondary: const Icon(Icons.location_on_outlined),

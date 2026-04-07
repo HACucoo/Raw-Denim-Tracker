@@ -771,19 +771,46 @@ abstract class AppLocalizations {
   String get categoryAll;
 
   /// No description provided for @categoryJeans.
+  ///
+  /// In en, this message translates to:
+  /// **'Jeans'**
   String get categoryJeans;
 
   /// No description provided for @categoryHemd.
+  ///
+  /// In en, this message translates to:
+  /// **'Shirt'**
   String get categoryHemd;
 
   /// No description provided for @categoryJacke.
+  ///
+  /// In en, this message translates to:
+  /// **'Jacket'**
   String get categoryJacke;
 
   /// No description provided for @categoryHose.
+  ///
+  /// In en, this message translates to:
+  /// **'Trousers'**
   String get categoryHose;
 
   /// No description provided for @categorySonstiges.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
   String get categorySonstiges;
+
+  /// No description provided for @categoriesEnabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Use categories'**
+  String get categoriesEnabled;
+
+  /// No description provided for @trackWearDaysSetting.
+  ///
+  /// In en, this message translates to:
+  /// **'Track wear days'**
+  String get trackWearDaysSetting;
 
   /// No description provided for @preferences.
   ///

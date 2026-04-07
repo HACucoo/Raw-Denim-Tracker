@@ -58,6 +58,32 @@ class SheetsEnabledNotifier extends Notifier<bool> {
   }
 }
 
+// --- CATEGORIES ---
+
+final categoriesEnabledProvider =
+    NotifierProvider<CategoriesEnabledNotifier, bool>(CategoriesEnabledNotifier.new);
+
+class CategoriesEnabledNotifier extends Notifier<bool> {
+  static const _key = 'categories_enabled';
+
+  @override
+  bool build() {
+    Future.microtask(_load);
+    return true;
+  }
+
+  Future<void> _load() async {
+    final prefs = await ref.read(sharedPreferencesProvider.future);
+    state = prefs.getBool(_key) ?? true;
+  }
+
+  Future<void> set(bool value) async {
+    final prefs = await ref.read(sharedPreferencesProvider.future);
+    await prefs.setBool(_key, value);
+    state = value;
+  }
+}
+
 // --- DEFAULT WASH TEMPERATURE ---
 
 final defaultWashTempProvider =

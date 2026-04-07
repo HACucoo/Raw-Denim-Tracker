@@ -132,6 +132,8 @@
   "categoryJacke": "Jacket",
   "categoryHose": "Trousers",
   "categorySonstiges": "Other",
+  "categoriesEnabled": "Use categories",
+  "trackWearDaysSetting": "Track wear days",
   "preferences": "Preferences",
   "defaultWashTemp": "Default wash temperature",
   "locationTracking": "Location Tracking",

@@ -81,8 +81,8 @@ class ItemCard extends ConsumerWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 6),
-                    countAsync.when(
+                    if (item.trackWearDays) const SizedBox(height: 6),
+                    if (item.trackWearDays) countAsync.when(
                       loading: () => const SizedBox(height: 20),
                       error: (_, __) => const SizedBox.shrink(),
                       data: (count) => Column(

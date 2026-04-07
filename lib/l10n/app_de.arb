@@ -132,6 +132,8 @@
   "categoryJacke": "Jacke",
   "categoryHose": "Hose",
   "categorySonstiges": "Sonstiges",
+  "categoriesEnabled": "Kategorien verwenden",
+  "trackWearDaysSetting": "Tragetage erfassen",
   "preferences": "Voreinstellungen",
   "defaultWashTemp": "Standard-Temperatur Wäsche",
   "locationTracking": "Standort-Tracking",

@@ -27,6 +27,7 @@ class Item {
   final DateTime createdAt;
   final int baseWearCount;
   final ItemCategory? category;
+  final bool trackWearDays;
 
   const Item({
     required this.id,
@@ -40,6 +41,7 @@ class Item {
     required this.createdAt,
     this.baseWearCount = 0,
     this.category,
+    this.trackWearDays = true,
   });
 
   Item copyWith({
@@ -52,6 +54,7 @@ class Item {
     Object? photoPath = _sentinel,
     Object? nfcTagId = _sentinel,
     Object? category = _sentinel,
+    bool? trackWearDays,
   }) {
     return Item(
       id: id,
@@ -65,6 +68,7 @@ class Item {
       createdAt: createdAt,
       baseWearCount: baseWearCount ?? this.baseWearCount,
       category: category == _sentinel ? this.category : category as ItemCategory?,
+      trackWearDays: trackWearDays ?? this.trackWearDays,
     );
   }
 
@@ -80,6 +84,7 @@ class Item {
         'created_at': createdAt.toIso8601String(),
         'base_wear_count': baseWearCount,
         'category': category?.name,
+        'track_wear_days': trackWearDays ? 1 : 0,
       };
 
   factory Item.fromMap(Map<String, dynamic> map) => Item(
@@ -94,6 +99,7 @@ class Item {
         createdAt: DateTime.parse(map['created_at'] as String),
         baseWearCount: (map['base_wear_count'] as int?) ?? 0,
         category: ItemCategory.fromString(map['category'] as String?),
+        trackWearDays: (map['track_wear_days'] as int? ?? 1) != 0,
       );
 
   Map<String, dynamic> toJson() => toMap();

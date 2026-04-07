@@ -23,6 +23,7 @@ class ItemsNotifier extends AsyncNotifier<List<Item>> {
     required DateTime firstWearDate,
     String? notes,
     String? photoPath,
+    ItemCategory? category,
   }) async {
     final item = Item(
       id: _uuid.v4(),
@@ -33,6 +34,7 @@ class ItemsNotifier extends AsyncNotifier<List<Item>> {
       notes: notes,
       photoPath: photoPath,
       createdAt: DateTime.now(),
+      category: category,
     );
     await _repo.insert(item);
     ref.invalidateSelf();

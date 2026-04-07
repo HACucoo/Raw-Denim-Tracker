@@ -354,6 +354,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get haSendNowFailed => 'Nothing to send – no wear days recorded yet';
 
   @override
+  String get category => 'Category';
+
+  @override
+  String get categoryAll => 'All';
+
+  @override
+  String get categoryJeans => 'Jeans';
+
+  @override
+  String get categoryHemd => 'Shirt';
+
+  @override
+  String get categoryJacke => 'Jacket';
+
+  @override
+  String get categoryHose => 'Trousers';
+
+  @override
+  String get categorySonstiges => 'Other';
+
+  @override
   String get preferences => 'Preferences';
 
   @override

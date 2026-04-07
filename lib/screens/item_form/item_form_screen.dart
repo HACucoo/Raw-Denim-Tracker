@@ -26,6 +26,7 @@ class _ItemFormScreenState extends ConsumerState<ItemFormScreen> {
   final _notesController = TextEditingController();
   DateTime _firstWearDate = DateTime.now();
   String? _photoPath;
+  ItemCategory? _category;
   Item? _existingItem;
   bool _loading = false;
 
@@ -50,6 +51,7 @@ class _ItemFormScreenState extends ConsumerState<ItemFormScreen> {
         _notesController.text = item.notes ?? '';
         _firstWearDate = item.firstWearDate;
         _photoPath = validPhotoPath;
+        _category = item.category;
       });
     }
   }
@@ -133,6 +135,7 @@ class _ItemFormScreenState extends ConsumerState<ItemFormScreen> {
           firstWearDate: _firstWearDate,
           notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
           photoPath: _photoPath,
+          category: _category,
         );
       } else {
         await notifier.updateItem(_existingItem!.copyWith(
@@ -142,6 +145,7 @@ class _ItemFormScreenState extends ConsumerState<ItemFormScreen> {
           firstWearDate: _firstWearDate,
           notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
           photoPath: _photoPath,
+          category: _category,
         ));
       }
       if (mounted) context.pop();
@@ -244,6 +248,24 @@ class _ItemFormScreenState extends ConsumerState<ItemFormScreen> {
                 labelText: l10n.size,
                 border: const OutlineInputBorder(),
               ),
+            ),
+            const SizedBox(height: 12),
+
+            DropdownButtonFormField<ItemCategory?>(
+              value: _category,
+              decoration: InputDecoration(
+                labelText: l10n.category,
+                border: const OutlineInputBorder(),
+              ),
+              items: [
+                DropdownMenuItem(value: null, child: Text(l10n.categoryAll)),
+                DropdownMenuItem(value: ItemCategory.jeans, child: Text(l10n.categoryJeans)),
+                DropdownMenuItem(value: ItemCategory.hemd, child: Text(l10n.categoryHemd)),
+                DropdownMenuItem(value: ItemCategory.jacke, child: Text(l10n.categoryJacke)),
+                DropdownMenuItem(value: ItemCategory.hose, child: Text(l10n.categoryHose)),
+                DropdownMenuItem(value: ItemCategory.sonstiges, child: Text(l10n.categorySonstiges)),
+              ],
+              onChanged: (val) => setState(() => _category = val),
             ),
             const SizedBox(height: 12),
 

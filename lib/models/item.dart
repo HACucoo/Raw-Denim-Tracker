@@ -1,3 +1,20 @@
+enum ItemCategory {
+  jeans,
+  hemd,
+  jacke,
+  hose,
+  sonstiges;
+
+  static ItemCategory? fromString(String? value) {
+    if (value == null) return null;
+    try {
+      return ItemCategory.values.byName(value);
+    } catch (_) {
+      return null;
+    }
+  }
+}
+
 class Item {
   final String id;
   final String brand;
@@ -9,6 +26,7 @@ class Item {
   final String? nfcTagId;
   final DateTime createdAt;
   final int baseWearCount;
+  final ItemCategory? category;
 
   const Item({
     required this.id,
@@ -21,6 +39,7 @@ class Item {
     this.nfcTagId,
     required this.createdAt,
     this.baseWearCount = 0,
+    this.category,
   });
 
   Item copyWith({
@@ -32,6 +51,7 @@ class Item {
     int? baseWearCount,
     Object? photoPath = _sentinel,
     Object? nfcTagId = _sentinel,
+    Object? category = _sentinel,
   }) {
     return Item(
       id: id,
@@ -44,6 +64,7 @@ class Item {
       nfcTagId: nfcTagId == _sentinel ? this.nfcTagId : nfcTagId as String?,
       createdAt: createdAt,
       baseWearCount: baseWearCount ?? this.baseWearCount,
+      category: category == _sentinel ? this.category : category as ItemCategory?,
     );
   }
 
@@ -58,6 +79,7 @@ class Item {
         'nfc_tag_id': nfcTagId,
         'created_at': createdAt.toIso8601String(),
         'base_wear_count': baseWearCount,
+        'category': category?.name,
       };
 
   factory Item.fromMap(Map<String, dynamic> map) => Item(
@@ -71,6 +93,7 @@ class Item {
         nfcTagId: map['nfc_tag_id'] as String?,
         createdAt: DateTime.parse(map['created_at'] as String),
         baseWearCount: (map['base_wear_count'] as int?) ?? 0,
+        category: ItemCategory.fromString(map['category'] as String?),
       );
 
   Map<String, dynamic> toJson() => toMap();

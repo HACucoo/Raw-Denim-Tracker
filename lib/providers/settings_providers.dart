@@ -58,6 +58,32 @@ class SheetsEnabledNotifier extends Notifier<bool> {
   }
 }
 
+// --- DEFAULT WASH TEMPERATURE ---
+
+final defaultWashTempProvider =
+    NotifierProvider<DefaultWashTempNotifier, int>(DefaultWashTempNotifier.new);
+
+class DefaultWashTempNotifier extends Notifier<int> {
+  static const _key = 'default_wash_temp';
+
+  @override
+  int build() {
+    Future.microtask(_load);
+    return 30;
+  }
+
+  Future<void> _load() async {
+    final prefs = await ref.read(sharedPreferencesProvider.future);
+    state = prefs.getInt(_key) ?? 30;
+  }
+
+  Future<void> set(int value) async {
+    final prefs = await ref.read(sharedPreferencesProvider.future);
+    await prefs.setInt(_key, value);
+    state = value;
+  }
+}
+
 // --- LOCATION ---
 
 final locationEnabledProvider =

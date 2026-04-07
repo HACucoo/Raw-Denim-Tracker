@@ -125,6 +125,8 @@
   "haSendNow": "Send now",
   "haSendNowSuccess": "Sent to Home Assistant",
   "haSendNowFailed": "Nothing to send – no wear days recorded yet",
+  "preferences": "Preferences",
+  "defaultWashTemp": "Default wash temperature",
   "locationTracking": "Location Tracking",
   "locationTrackingEnable": "Record location when logging today's wear day",
   "wearDayLocation": "Location",

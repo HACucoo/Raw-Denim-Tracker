@@ -15,12 +15,12 @@ class WearDay {
 
   bool get hasLocation => latitude != null && longitude != null;
 
-  WearDay copyWith({DateTime? date}) => WearDay(
+  WearDay copyWith({DateTime? date, double? latitude, double? longitude}) => WearDay(
         id: id,
         itemId: itemId,
         date: date ?? this.date,
-        latitude: latitude,
-        longitude: longitude,
+        latitude: latitude ?? this.latitude,
+        longitude: longitude ?? this.longitude,
       );
 
   Map<String, dynamic> toMap() => {

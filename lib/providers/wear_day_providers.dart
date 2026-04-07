@@ -40,23 +40,27 @@ class WearDayActions {
   /// Returns true if the wear day was inserted, false if it already existed.
   Future<bool> addWearDay(String itemId, DateTime date) async {
     if (await _repo.existsForDate(itemId, date)) return false;
-    final today = DateTime.now();
-    final isToday = date.year == today.year &&
-        date.month == today.month &&
-        date.day == today.day;
-    final (lat, lng) = isToday ? await _currentLocation() : (null, null);
-    await _repo.insert(WearDay(
-      id: _uuid.v4(),
-      itemId: itemId,
-      date: date,
-      latitude: lat,
-      longitude: lng,
-    ));
+    final wearDay = WearDay(id: _uuid.v4(), itemId: itemId, date: date);
+    await _repo.insert(wearDay);
     _ref.invalidate(wearDaysProvider(itemId));
     _ref.invalidate(wearDayCountProvider(itemId));
     _ref.invalidate(lastWearDateProvider(itemId));
     _pushToHa(itemId);
+    // Fetch location in background and silently update the record when ready.
+    final today = DateTime.now();
+    final isToday = date.year == today.year &&
+        date.month == today.month &&
+        date.day == today.day;
+    if (isToday) _attachLocation(wearDay);
     return true;
+  }
+
+  /// Fetches location in the background (up to 30 s) and patches the record.
+  Future<void> _attachLocation(WearDay wearDay) async {
+    final (lat, lng) = await _currentLocation();
+    if (lat == null || lng == null) return;
+    await _repo.update(wearDay.copyWith(latitude: lat, longitude: lng));
+    _ref.invalidate(wearDaysProvider(wearDay.itemId));
   }
 
   /// Best-effort location capture with 5-second timeout. Returns (null, null) on failure.
@@ -74,8 +78,8 @@ class WearDayActions {
       }
       final pos = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.medium,
-          timeLimit: Duration(seconds: 5),
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 30),
         ),
       );
       return (pos.latitude, pos.longitude);

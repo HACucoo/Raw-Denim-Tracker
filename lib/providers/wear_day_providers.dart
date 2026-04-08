@@ -6,6 +6,7 @@ import '../models/wear_day.dart';
 import '../repositories/item_repository.dart';
 import '../repositories/wear_day_repository.dart';
 import '../services/ha_service.dart';
+import '../services/widget_service.dart';
 import 'item_providers.dart';
 
 final wearDayRepositoryProvider = Provider<WearDayRepository>((_) => WearDayRepository());
@@ -46,6 +47,7 @@ class WearDayActions {
     _ref.invalidate(wearDayCountProvider(itemId));
     _ref.invalidate(lastWearDateProvider(itemId));
     _pushToHa(itemId);
+    WidgetService.refreshIfWidgetItem(itemId);
     // Fetch location in background and silently update the record when ready.
     final today = DateTime.now();
     final isToday = date.year == today.year &&
@@ -123,6 +125,7 @@ class WearDayActions {
     _ref.invalidate(wearDaysProvider(itemId));
     _ref.invalidate(wearDayCountProvider(itemId));
     _ref.invalidate(lastWearDateProvider(itemId));
+    WidgetService.refreshIfWidgetItem(itemId);
   }
 
   /// Sets the base wear count (historical offset) for an item.

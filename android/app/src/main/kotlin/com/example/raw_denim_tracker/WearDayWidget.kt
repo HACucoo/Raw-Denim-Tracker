@@ -122,8 +122,16 @@ class WearDayWidget : AppWidgetProvider() {
             } catch (e: Exception) { false }
         }
 
-        private fun loadBitmap(path: String): Bitmap? = try {
-            BitmapFactory.decodeFile(path)
+        private fun loadBitmap(path: String, maxPx: Int = 300): Bitmap? = try {
+            // First pass: read dimensions only
+            val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+            BitmapFactory.decodeFile(path, bounds)
+            // Calculate sample size to stay within maxPx
+            val largest = maxOf(bounds.outWidth, bounds.outHeight).coerceAtLeast(1)
+            var sampleSize = 1
+            while (largest / (sampleSize * 2) >= maxPx) sampleSize *= 2
+            // Second pass: decode at reduced size
+            BitmapFactory.decodeFile(path, BitmapFactory.Options().apply { inSampleSize = sampleSize })
         } catch (e: Exception) { null }
     }
 }

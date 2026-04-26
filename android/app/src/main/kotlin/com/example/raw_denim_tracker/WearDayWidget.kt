@@ -35,7 +35,10 @@ class WearDayWidget : AppWidgetProvider() {
             // Count = base_wear_count + tracked rows
             val count = getTotalCount(context, itemId)
 
-            val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+            // Locale.US guarantees ASCII digits — Locale.getDefault() can produce
+            // non-Latin numerals (e.g. Arabic), which break the LIKE comparison
+            // against ISO-formatted date strings stored by Flutter.
+            val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
             val wornToday = itemId != null && wornTodayExists(context, itemId, today)
 
             val views = RemoteViews(context.packageName, R.layout.wear_day_widget)

@@ -72,8 +72,8 @@ class SheetsService {
           ValueRange(range: 'Dashboard!A1:D1', values: [
             ['Kleidungsstück', 'Tragetage', 'Wäschen', 'Getragen seit']
           ]),
-          ValueRange(range: 'Items!A1:L1', values: [
-            ['id', 'brand', 'model', 'size', 'first_wear_date', 'notes', 'nfc_tag_id', 'created_at', 'photo_path', 'base_wear_count', 'total_wear_days', 'category']
+          ValueRange(range: 'Items!A1:M1', values: [
+            ['id', 'brand', 'model', 'size', 'first_wear_date', 'notes', 'nfc_tag_id', 'created_at', 'photo_path', 'base_wear_count', 'total_wear_days', 'category', 'track_wear_days']
           ]),
           ValueRange(range: 'WearDays!A1:G1', values: [
             ['id', 'item_id', 'brand', 'model', 'date', 'latitude', 'longitude']
@@ -190,8 +190,8 @@ class SheetsService {
         valueInputOption: 'RAW',
         data: [
           ValueRange(
-            range: 'Items!A1:L1',
-            values: [['id', 'brand', 'model', 'size', 'first_wear_date', 'notes', 'nfc_tag_id', 'created_at', 'photo_path', 'base_wear_count', 'total_wear_days', 'category']],
+            range: 'Items!A1:M1',
+            values: [['id', 'brand', 'model', 'size', 'first_wear_date', 'notes', 'nfc_tag_id', 'created_at', 'photo_path', 'base_wear_count', 'total_wear_days', 'category', 'track_wear_days']],
           ),
           ValueRange(
             range: 'WearDays!A1:G1',
@@ -244,6 +244,7 @@ class SheetsService {
             i.baseWearCount,
             total,
             i.category?.name ?? '',
+            i.trackWearDays ? 1 : 0,
           ];
         }).toList(),
       ));

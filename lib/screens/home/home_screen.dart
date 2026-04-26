@@ -156,7 +156,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           Expanded(
             child: itemsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Fehler: $e')),
+        error: (e, _) => Center(child: Text('${l10n.errorLoading}: $e')),
         data: (items) {
           if (items.isEmpty) {
             return Center(

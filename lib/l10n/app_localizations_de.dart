@@ -413,4 +413,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get gallery => 'Galerie';
+
+  @override
+  String get errorLoading => 'Fehler beim Laden';
 }

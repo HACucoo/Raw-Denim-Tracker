@@ -141,5 +141,7 @@
   "wearDayLocation": "Standort",
   "nfcLinked": "NFC verknüpft",
   "camera": "Kamera",
-  "gallery": "Galerie"
+  "gallery": "Galerie",
+  "errorLoading": "Fehler beim Laden",
+  "@errorLoading": {}
 }

@@ -38,7 +38,8 @@ class WearDayReceiver : BroadcastReceiver() {
         val dbFile = context.getDatabasePath("raw_denim_tracker.db")
         if (!dbFile.exists()) return
 
-        val today = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+        // Locale.US — ASCII digits, matches Flutter's ISO-format strings.
+        val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
 
         SQLiteDatabase.openDatabase(
             dbFile.path, null, SQLiteDatabase.OPEN_READWRITE

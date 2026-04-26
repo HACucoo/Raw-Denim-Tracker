@@ -8,24 +8,25 @@ import '../repositories/wear_day_repository.dart';
 import '../services/ha_service.dart';
 import '../services/widget_service.dart';
 import 'item_providers.dart';
+import 'sort_providers.dart';
 
 final wearDayRepositoryProvider = Provider<WearDayRepository>((_) => WearDayRepository());
 
 final _uuid = Uuid();
 
-final wearDaysProvider = FutureProvider.family<List<WearDay>, String>(
+final wearDaysProvider = FutureProvider.autoDispose.family<List<WearDay>, String>(
   (ref, itemId) => ref.read(wearDayRepositoryProvider).getByItemId(itemId),
 );
 
 /// Total wear days = baseWearCount (item offset) + tracked wear days in DB
-final wearDayCountProvider = FutureProvider.family<int, String>((ref, itemId) async {
+final wearDayCountProvider = FutureProvider.autoDispose.family<int, String>((ref, itemId) async {
   final item = await ref.read(itemRepositoryProvider).getById(itemId);
   final tracked = await ref.read(wearDayRepositoryProvider).countByItemId(itemId);
   return (item?.baseWearCount ?? 0) + tracked;
 });
 
 /// Last wear date for an item (null if never worn).
-final lastWearDateProvider = FutureProvider.family<DateTime?, String>(
+final lastWearDateProvider = FutureProvider.autoDispose.family<DateTime?, String>(
   (ref, itemId) => ref.read(wearDayRepositoryProvider).getLastWornDate(itemId),
 );
 
@@ -43,9 +44,7 @@ class WearDayActions {
     if (await _repo.existsForDate(itemId, date)) return false;
     final wearDay = WearDay(id: _uuid.v4(), itemId: itemId, date: date);
     await _repo.insert(wearDay);
-    _ref.invalidate(wearDaysProvider(itemId));
-    _ref.invalidate(wearDayCountProvider(itemId));
-    _ref.invalidate(lastWearDateProvider(itemId));
+    _invalidateAfterChange(itemId);
     _pushToHa(itemId);
     WidgetService.refreshIfWidgetItem(itemId);
     // Fetch location in background and silently update the record when ready.
@@ -55,6 +54,16 @@ class WearDayActions {
         date.day == today.day;
     if (isToday) _attachLocation(wearDay);
     return true;
+  }
+
+  /// Invalidates all caches that depend on this item's wear days, including
+  /// the home-screen sorted list (count- and last-worn-based sorts go stale
+  /// otherwise).
+  void _invalidateAfterChange(String itemId) {
+    _ref.invalidate(wearDaysProvider(itemId));
+    _ref.invalidate(wearDayCountProvider(itemId));
+    _ref.invalidate(lastWearDateProvider(itemId));
+    _ref.invalidate(sortedItemsProvider);
   }
 
   /// Fetches location in the background (up to 30 s) and patches the record.
@@ -118,13 +127,13 @@ class WearDayActions {
     await _repo.update(wearDay);
     _ref.invalidate(wearDaysProvider(itemId));
     _ref.invalidate(lastWearDateProvider(itemId));
+    _ref.invalidate(sortedItemsProvider);
   }
 
   Future<void> deleteWearDay(String itemId, String id) async {
     await _repo.delete(id);
-    _ref.invalidate(wearDaysProvider(itemId));
-    _ref.invalidate(wearDayCountProvider(itemId));
-    _ref.invalidate(lastWearDateProvider(itemId));
+    _invalidateAfterChange(itemId);
+    _pushToHa(itemId);
     WidgetService.refreshIfWidgetItem(itemId);
   }
 
@@ -134,5 +143,8 @@ class WearDayActions {
     if (item == null) return;
     await _itemRepo.update(item.copyWith(baseWearCount: count));
     _ref.invalidate(wearDayCountProvider(itemId));
+    _ref.invalidate(sortedItemsProvider);
+    _pushToHa(itemId);
+    WidgetService.refreshIfWidgetItem(itemId);
   }
 }

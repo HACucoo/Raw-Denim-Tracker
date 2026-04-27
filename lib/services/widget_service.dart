@@ -36,4 +36,12 @@ class WidgetService {
     final widgetItemId = await HomeWidget.getWidgetData<String>('widget_item_id');
     if (widgetItemId == itemId) await updateWidget(itemId);
   }
+
+  /// Triggers a redraw without modifying any data — used as a safety net on
+  /// app startup so the "worn today" indicator reflects the current date even
+  /// if the device missed the midnight DATE_CHANGED broadcast (e.g. powered
+  /// off overnight).
+  static Future<void> forceRefresh() async {
+    await HomeWidget.updateWidget(androidName: _widgetName);
+  }
 }

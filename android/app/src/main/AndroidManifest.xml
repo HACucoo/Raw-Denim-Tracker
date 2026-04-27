@@ -83,6 +83,13 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <!-- Triggers a redraw at midnight so the "worn today" check
+                     mark clears on the new day. Also handles manual time/zone
+                     changes. These implicit broadcasts are exempt from the
+                     Android 8+ background restriction. -->
+                <action android:name="android.intent.action.DATE_CHANGED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"

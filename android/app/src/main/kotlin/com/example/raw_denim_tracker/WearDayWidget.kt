@@ -23,6 +23,24 @@ class WearDayWidget : AppWidgetProvider() {
         for (id in appWidgetIds) updateWidget(context, appWidgetManager, id)
     }
 
+    override fun onReceive(context: Context, intent: Intent) {
+        super.onReceive(context, intent)
+        // Force a redraw on midnight rollover / time changes so the
+        // "worn today" indicator updates without waiting for the next
+        // appwidget update tick.
+        when (intent.action) {
+            Intent.ACTION_DATE_CHANGED,
+            Intent.ACTION_TIME_CHANGED,
+            Intent.ACTION_TIMEZONE_CHANGED -> {
+                val manager = AppWidgetManager.getInstance(context)
+                val ids = manager.getAppWidgetIds(
+                    android.content.ComponentName(context, WearDayWidget::class.java)
+                )
+                for (id in ids) updateWidget(context, manager, id)
+            }
+        }
+    }
+
     companion object {
         const val ACTION_ADD_WEAR_DAY = "app.rawdenim.tracker.ADD_WEAR_DAY"
 

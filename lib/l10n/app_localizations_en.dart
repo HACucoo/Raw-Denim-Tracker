@@ -407,4 +407,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorLoading => 'Error loading data';
+
+  @override
+  String get widgetMonochrome => 'Monochrome widget';
+
+  @override
+  String get widgetMonochromeSubtitle =>
+      'Black & white rendering (Nothing OS style)';
 }

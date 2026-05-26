@@ -1,4 +1,5 @@
 import 'package:home_widget/home_widget.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../repositories/item_repository.dart';
 import '../repositories/wear_day_repository.dart';
 
@@ -7,6 +8,13 @@ class WidgetService {
 
   /// Call whenever the widget item changes or wear days are updated.
   static Future<void> updateWidget(String? itemId) async {
+    // Always sync the monochrome flag so the Kotlin side picks up toggles.
+    final prefs = await SharedPreferences.getInstance();
+    await HomeWidget.saveWidgetData<bool>(
+      'widget_monochrome',
+      prefs.getBool('widget_monochrome') ?? false,
+    );
+
     if (itemId == null) {
       await HomeWidget.saveWidgetData<String>('widget_item_name', 'Kein Element ausgewählt');
       await HomeWidget.saveWidgetData<int>('widget_wear_count', 0);
@@ -43,5 +51,14 @@ class WidgetService {
   /// off overnight).
   static Future<void> forceRefresh() async {
     await HomeWidget.updateWidget(androidName: _widgetName);
+  }
+
+  /// Re-syncs all widget data (including the monochrome flag) for the
+  /// currently selected widget item. Use after a settings toggle that affects
+  /// rendering but doesn't tie to a specific item event.
+  static Future<void> resyncActive() async {
+    final prefs = await SharedPreferences.getInstance();
+    final itemId = prefs.getString('widget_selected_item_id');
+    await updateWidget(itemId);
   }
 }

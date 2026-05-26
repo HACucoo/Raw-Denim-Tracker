@@ -143,5 +143,9 @@
   "camera": "Kamera",
   "gallery": "Galerie",
   "errorLoading": "Fehler beim Laden",
-  "@errorLoading": {}
+  "@errorLoading": {},
+  "widgetMonochrome": "Widget monochrom",
+  "@widgetMonochrome": {},
+  "widgetMonochromeSubtitle": "Schwarz-weiß-Darstellung (Nothing OS Stil)",
+  "@widgetMonochromeSubtitle": {}
 }

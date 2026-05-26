@@ -865,6 +865,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Error loading data'**
   String get errorLoading;
+
+  /// No description provided for @widgetMonochrome.
+  ///
+  /// In en, this message translates to:
+  /// **'Monochrome widget'**
+  String get widgetMonochrome;
+
+  /// No description provided for @widgetMonochromeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Black & white rendering (Nothing OS style)'**
+  String get widgetMonochromeSubtitle;
 }
 
 class _AppLocalizationsDelegate

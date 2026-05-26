@@ -8,6 +8,10 @@ import android.content.Intent
 import android.database.sqlite.SQLiteDatabase
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.ColorMatrix
+import android.graphics.ColorMatrixColorFilter
+import android.graphics.Paint
 import android.widget.RemoteViews
 import es.antonborri.home_widget.HomeWidgetPlugin
 import java.text.SimpleDateFormat
@@ -49,6 +53,7 @@ class WearDayWidget : AppWidgetProvider() {
             val itemId   = data.getString("widget_item_id", null)
             val itemName = data.getString("widget_item_name", "No item selected")
             val photoPath = data.getString("widget_photo_path", null)
+            val monochrome = data.getBoolean("widget_monochrome", false)
 
             // Count = base_wear_count + tracked rows
             val count = getTotalCount(context, itemId)
@@ -61,8 +66,9 @@ class WearDayWidget : AppWidgetProvider() {
 
             val views = RemoteViews(context.packageName, R.layout.wear_day_widget)
 
-            // Photo
-            val bitmap = photoPath?.let { loadBitmap(it) }
+            // Photo (desaturated in monochrome mode for Nothing OS aesthetic)
+            val rawBitmap = photoPath?.let { loadBitmap(it) }
+            val bitmap = if (monochrome && rawBitmap != null) toGrayscale(rawBitmap) else rawBitmap
             if (bitmap != null) {
                 views.setImageViewBitmap(R.id.widget_photo, bitmap)
             } else {
@@ -141,6 +147,18 @@ class WearDayWidget : AppWidgetProvider() {
                         exists
                     }
             } catch (e: Exception) { false }
+        }
+
+        /// Desaturates a bitmap. Used when the user enables monochrome rendering
+        /// (e.g. on Nothing OS). Pure black & white via setSaturation(0f).
+        private fun toGrayscale(src: Bitmap): Bitmap {
+            val out = Bitmap.createBitmap(src.width, src.height, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(out)
+            val paint = Paint().apply {
+                colorFilter = ColorMatrixColorFilter(ColorMatrix().apply { setSaturation(0f) })
+            }
+            canvas.drawBitmap(src, 0f, 0f, paint)
+            return out
         }
 
         private fun loadBitmap(path: String, maxPx: Int = 300): Bitmap? = try {

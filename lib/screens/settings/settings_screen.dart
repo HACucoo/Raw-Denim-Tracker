@@ -26,6 +26,7 @@ class SettingsScreen extends ConsumerWidget {
     final itemsAsync = ref.watch(itemsProvider);
     final categoriesEnabled = ref.watch(categoriesEnabledProvider);
     final locationEnabled = ref.watch(locationEnabledProvider);
+    final widgetMonochrome = ref.watch(widgetMonochromeProvider);
     final defaultWashTemp = ref.watch(defaultWashTempProvider);
     final haEnabled = ref.watch(haEnabledProvider);
     final haUrl = ref.watch(haUrlProvider);
@@ -72,6 +73,16 @@ class SettingsScreen extends ConsumerWidget {
             value: locationEnabled,
             onChanged: (val) =>
                 ref.read(locationEnabledProvider.notifier).set(val),
+          ),
+          SwitchListTile(
+            secondary: const Icon(Icons.filter_b_and_w),
+            title: Text(l10n.widgetMonochrome),
+            subtitle: Text(l10n.widgetMonochromeSubtitle),
+            value: widgetMonochrome,
+            onChanged: (val) async {
+              await ref.read(widgetMonochromeProvider.notifier).set(val);
+              await WidgetService.resyncActive();
+            },
           ),
 
           const Divider(),

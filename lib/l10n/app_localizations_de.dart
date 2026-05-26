@@ -416,4 +416,11 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get errorLoading => 'Fehler beim Laden';
+
+  @override
+  String get widgetMonochrome => 'Widget monochrom';
+
+  @override
+  String get widgetMonochromeSubtitle =>
+      'Schwarz-weiß-Darstellung (Nothing OS Stil)';
 }

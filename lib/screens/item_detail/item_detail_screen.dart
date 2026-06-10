@@ -6,7 +6,6 @@ import 'package:intl/intl.dart';
 import '../../models/item.dart';
 import '../../providers/item_providers.dart';
 import '../../providers/wear_day_providers.dart';
-import '../../services/nfc_service.dart';
 import '../../widgets/garment_photo.dart';
 import 'wear_days_tab.dart';
 import 'washes_tab.dart';

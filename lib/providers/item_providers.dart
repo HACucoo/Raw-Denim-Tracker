@@ -1,8 +1,11 @@
+import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import '../models/item.dart';
 import '../repositories/item_repository.dart';
 import '../services/widget_service.dart';
+import 'settings_providers.dart';
 
 final itemRepositoryProvider = Provider<ItemRepository>((_) => ItemRepository());
 
@@ -50,8 +53,27 @@ class ItemsNotifier extends AsyncNotifier<List<Item>> {
   }
 
   Future<void> deleteItem(String id) async {
+    final item = await _repo.getById(id);
     await _repo.delete(id);
     ref.invalidateSelf();
+
+    // The photo copy in the documents dir belongs to this item alone —
+    // remove it so deleted items don't leave files behind.
+    final photo = item?.photoPath;
+    if (photo != null) {
+      try {
+        await File(photo).delete();
+      } catch (_) {/* already gone */}
+    }
+
+    // If the widget pointed at this item, clear it instead of letting it
+    // show (and insert wear days for) a dead item id.
+    final prefs = await SharedPreferences.getInstance();
+    if (prefs.getString('widget_selected_item_id') == id) {
+      await prefs.remove('widget_selected_item_id');
+      await WidgetService.updateWidget(null);
+      ref.invalidate(widgetSelectedItemIdProvider);
+    }
   }
 
   Future<void> linkNfcTag(String itemId, String nfcTagId) async {

@@ -6,10 +6,7 @@ import '../../providers/item_providers.dart';
 import '../../providers/settings_providers.dart';
 import '../../providers/wear_day_providers.dart';
 import '../../providers/wash_providers.dart';
-import '../../repositories/item_repository.dart';
-import '../../repositories/wear_day_repository.dart';
 import '../../services/widget_service.dart';
-import '../../repositories/wash_repository.dart';
 import '../../services/backup_service.dart';
 import '../../services/ha_service.dart';
 import '../../services/sheets_service.dart';
@@ -300,7 +297,15 @@ class SettingsScreen extends ConsumerWidget {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     }
     if (result == BackupResult.success) {
+      // The home-screen cards hold live listeners on the family providers,
+      // so autoDispose alone won't refresh them — invalidate the whole
+      // families to surface imported wear days/washes for existing items.
       ref.invalidate(itemsProvider);
+      ref.invalidate(wearDaysProvider);
+      ref.invalidate(wearDayCountProvider);
+      ref.invalidate(lastWearDateProvider);
+      ref.invalidate(washesProvider);
+      WidgetService.resyncActive();
     }
   }
 

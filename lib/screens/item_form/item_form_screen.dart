@@ -141,6 +141,7 @@ class _ItemFormScreenState extends ConsumerState<ItemFormScreen> {
           trackWearDays: _trackWearDays,
         );
       } else {
+        final oldPhoto = _existingItem!.photoPath;
         await notifier.updateItem(_existingItem!.copyWith(
           brand: _brandController.text.trim(),
           model: _modelController.text.trim(),
@@ -151,6 +152,13 @@ class _ItemFormScreenState extends ConsumerState<ItemFormScreen> {
           category: _category,
           trackWearDays: _trackWearDays,
         ));
+        // Photo was replaced or removed — delete the superseded copy so the
+        // documents dir doesn't accumulate orphaned images.
+        if (oldPhoto != null && oldPhoto != _photoPath) {
+          try {
+            await File(oldPhoto).delete();
+          } catch (_) {/* already gone */}
+        }
       }
       if (mounted) context.pop();
     } finally {

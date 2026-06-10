@@ -17,7 +17,10 @@ class AppDatabase {
     final path = join(dbPath, 'raw_denim_tracker.db');
     return openDatabase(
       path,
-      version: 6,
+      version: 7,
+      // SQLite ships with foreign keys OFF per connection — without this,
+      // the ON DELETE CASCADE clauses below never fire.
+      onConfigure: (db) => db.execute('PRAGMA foreign_keys = ON'),
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -89,6 +92,16 @@ class AppDatabase {
     if (oldVersion < 6) {
       await db.execute(
         'ALTER TABLE items ADD COLUMN track_wear_days INTEGER NOT NULL DEFAULT 1',
+      );
+    }
+    if (oldVersion < 7) {
+      // Foreign-key enforcement was never active before v7, so deleting an
+      // item left its wear_days/washes behind. Purge those orphans once.
+      await db.execute(
+        'DELETE FROM wear_days WHERE item_id NOT IN (SELECT id FROM items)',
+      );
+      await db.execute(
+        'DELETE FROM washes WHERE item_id NOT IN (SELECT id FROM items)',
       );
     }
   }

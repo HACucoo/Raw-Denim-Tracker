@@ -1,8 +1,10 @@
 package app.rawdenim.tracker
 
+import android.app.AlarmManager
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.database.sqlite.SQLiteDatabase
@@ -25,28 +27,92 @@ class WearDayWidget : AppWidgetProvider() {
         appWidgetIds: IntArray
     ) {
         for (id in appWidgetIds) updateWidget(context, appWidgetManager, id)
+        // (Re)arm the midnight alarm whenever the system updates the widget.
+        scheduleMidnightRefresh(context)
+    }
+
+    override fun onEnabled(context: Context) {
+        super.onEnabled(context)
+        scheduleMidnightRefresh(context)
+    }
+
+    override fun onDisabled(context: Context) {
+        super.onDisabled(context)
+        // Last widget removed — stop the daily alarm.
+        cancelMidnightRefresh(context)
     }
 
     override fun onReceive(context: Context, intent: Intent) {
         super.onReceive(context, intent)
         // Force a redraw on midnight rollover / time changes so the
         // "worn today" indicator updates without waiting for the next
-        // appwidget update tick.
+        // appwidget update tick. ACTION_DATE_CHANGED alone is unreliable on
+        // OEM ROMs that defer implicit broadcasts during Doze, so the primary
+        // mechanism is our own midnight AlarmManager (ACTION_MIDNIGHT_REFRESH).
         when (intent.action) {
+            ACTION_MIDNIGHT_REFRESH,
             Intent.ACTION_DATE_CHANGED,
             Intent.ACTION_TIME_CHANGED,
-            Intent.ACTION_TIMEZONE_CHANGED -> {
-                val manager = AppWidgetManager.getInstance(context)
-                val ids = manager.getAppWidgetIds(
-                    android.content.ComponentName(context, WearDayWidget::class.java)
-                )
-                for (id in ids) updateWidget(context, manager, id)
+            Intent.ACTION_TIMEZONE_CHANGED,
+            Intent.ACTION_BOOT_COMPLETED -> {
+                refreshAll(context)
+                // Re-anchor for the next midnight (alarms don't survive reboot,
+                // and manual time changes move the target).
+                scheduleMidnightRefresh(context)
             }
         }
     }
 
     companion object {
         const val ACTION_ADD_WEAR_DAY = "app.rawdenim.tracker.ADD_WEAR_DAY"
+        const val ACTION_MIDNIGHT_REFRESH = "app.rawdenim.tracker.MIDNIGHT_REFRESH"
+
+        private fun refreshAll(context: Context) {
+            val manager = AppWidgetManager.getInstance(context)
+            val ids = manager.getAppWidgetIds(
+                ComponentName(context, WearDayWidget::class.java)
+            )
+            for (id in ids) updateWidget(context, manager, id)
+        }
+
+        /// Schedules a one-shot alarm for the next local midnight (+5s buffer).
+        /// Uses setAndAllowWhileIdle so it fires even in Doze, without needing
+        /// the exact-alarm permission. The handler re-schedules the next one,
+        /// forming a daily chain.
+        fun scheduleMidnightRefresh(context: Context) {
+            val alarmManager =
+                context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
+            val cal = Calendar.getInstance().apply {
+                add(Calendar.DAY_OF_YEAR, 1)
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 5)
+                set(Calendar.MILLISECOND, 0)
+            }
+            try {
+                alarmManager.setAndAllowWhileIdle(
+                    AlarmManager.RTC, cal.timeInMillis, midnightPendingIntent(context)
+                )
+            } catch (_: Exception) { /* best-effort; DATE_CHANGED is the fallback */ }
+        }
+
+        fun cancelMidnightRefresh(context: Context) {
+            val alarmManager =
+                context.getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
+            val existing = PendingIntent.getBroadcast(
+                context, 1,
+                Intent(context, WearDayWidget::class.java).apply { action = ACTION_MIDNIGHT_REFRESH },
+                PendingIntent.FLAG_NO_CREATE or PendingIntent.FLAG_IMMUTABLE
+            )
+            if (existing != null) alarmManager.cancel(existing)
+        }
+
+        private fun midnightPendingIntent(context: Context): PendingIntent =
+            PendingIntent.getBroadcast(
+                context, 1,
+                Intent(context, WearDayWidget::class.java).apply { action = ACTION_MIDNIGHT_REFRESH },
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
 
         fun updateWidget(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int) {
             val data = HomeWidgetPlugin.getData(context)

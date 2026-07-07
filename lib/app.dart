@@ -84,6 +84,8 @@ class _RawDenimAppState extends ConsumerState<RawDenimApp>
     if (state == AppLifecycleState.resumed) {
       ref.invalidate(itemsProvider);
       ref.invalidate(wearDayCountProvider);
+      ref.invalidate(wearDaysProvider);
+      ref.invalidate(lastWearDateProvider);
       ref.invalidate(sortedItemsProvider);
     }
   }

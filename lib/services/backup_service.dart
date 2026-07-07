@@ -98,10 +98,10 @@ class BackupService {
         .substring(0, 19);
     final file = File('${dir.path}/denim_backup_$timestamp.zip');
     await file.writeAsBytes(bytes);
-    await Share.shareXFiles(
-      [XFile(file.path, mimeType: 'application/zip')],
+    await SharePlus.instance.share(ShareParams(
+      files: [XFile(file.path, mimeType: 'application/zip')],
       subject: 'Raw Denim Tracker Backup',
-    );
+    ));
   }
 
   /// Save backup directly to app-specific external storage.
@@ -258,18 +258,25 @@ class BackupService {
           .map((e) => Wash.fromJson(e as Map<String, dynamic>))
           .toList();
 
-      for (final item in items) {
-        await _itemRepo.insert(item);
-      }
-      for (final wearDay in wearDays) {
-        await _wearDayRepo.insert(wearDay);
-      }
-      for (final wash in washes) {
-        await _washRepo.insert(wash);
-      }
+      await _insertAll(items, wearDays, washes);
       return BackupResult.success;
     } catch (_) {
       return BackupResult.error;
+    }
+  }
+
+  /// Items are upserted (never REPLACEd) so existing rows keep their
+  /// wear_days/washes — REPLACE would cascade-delete them via foreign keys.
+  Future<void> _insertAll(
+      List<Item> items, List<WearDay> wearDays, List<Wash> washes) async {
+    for (final item in items) {
+      await _itemRepo.upsert(item);
+    }
+    for (final wearDay in wearDays) {
+      await _wearDayRepo.insert(wearDay);
+    }
+    for (final wash in washes) {
+      await _washRepo.insert(wash);
     }
   }
 
@@ -290,15 +297,7 @@ class BackupService {
           .map((e) => Wash.fromJson(e as Map<String, dynamic>))
           .toList();
 
-      for (final item in items) {
-        await _itemRepo.insert(item);
-      }
-      for (final wearDay in wearDays) {
-        await _wearDayRepo.insert(wearDay);
-      }
-      for (final wash in washes) {
-        await _washRepo.insert(wash);
-      }
+      await _insertAll(items, wearDays, washes);
       return BackupResult.success;
     } catch (_) {
       return BackupResult.error;

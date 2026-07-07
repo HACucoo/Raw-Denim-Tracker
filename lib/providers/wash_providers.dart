@@ -5,7 +5,7 @@ import '../repositories/wash_repository.dart';
 
 final washRepositoryProvider = Provider<WashRepository>((_) => WashRepository());
 
-final _uuid = Uuid();
+const _uuid = Uuid();
 
 final washesProvider = FutureProvider.autoDispose.family<List<Wash>, String>(
   (ref, itemId) => ref.read(washRepositoryProvider).getByItemId(itemId),

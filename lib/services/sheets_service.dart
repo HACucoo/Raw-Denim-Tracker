@@ -27,9 +27,7 @@ class SheetsService {
   }
 
   static Future<SheetsApi> _getSheetsApi() async {
-    if (_currentAccount == null) {
-      _currentAccount = await _googleSignIn.signInSilently();
-    }
+    _currentAccount ??= await _googleSignIn.signInSilently();
     final account = _currentAccount;
     if (account == null) throw Exception('Not signed in to Google');
 

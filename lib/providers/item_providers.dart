@@ -9,7 +9,7 @@ import 'settings_providers.dart';
 
 final itemRepositoryProvider = Provider<ItemRepository>((_) => ItemRepository());
 
-final _uuid = Uuid();
+const _uuid = Uuid();
 
 final itemsProvider = AsyncNotifierProvider<ItemsNotifier, List<Item>>(ItemsNotifier.new);
 
@@ -67,12 +67,12 @@ class ItemsNotifier extends AsyncNotifier<List<Item>> {
     }
 
     // If the widget pointed at this item, clear it instead of letting it
-    // show (and insert wear days for) a dead item id.
+    // show (and insert wear days for) a dead item id. Read from prefs, not
+    // provider state — the notifier's async load may not have run yet.
     final prefs = await SharedPreferences.getInstance();
     if (prefs.getString('widget_selected_item_id') == id) {
-      await prefs.remove('widget_selected_item_id');
+      await ref.read(widgetSelectedItemIdProvider.notifier).set(null);
       await WidgetService.updateWidget(null);
-      ref.invalidate(widgetSelectedItemIdProvider);
     }
   }
 
@@ -94,6 +94,9 @@ class ItemsNotifier extends AsyncNotifier<List<Item>> {
       _repo.getByNfcTagId(nfcTagId);
 }
 
-final itemProvider = FutureProvider.family<Item?, String>((ref, id) {
-  return ref.read(itemRepositoryProvider).getById(id);
+/// Derived from [itemsProvider] so it refreshes automatically whenever the
+/// items list is invalidated (edit, NFC link, base-count change, import, …).
+final itemProvider = FutureProvider.autoDispose.family<Item?, String>((ref, id) async {
+  final items = await ref.watch(itemsProvider.future);
+  return items.where((i) => i.id == id).firstOrNull;
 });

@@ -20,57 +20,31 @@ enum SortDirection { ascending, descending }
 final sortOrderProvider =
     NotifierProvider<SortOrderNotifier, SortOrder>(SortOrderNotifier.new);
 
-class SortOrderNotifier extends Notifier<SortOrder> {
-  static const _key = 'sort_order';
-
+class SortOrderNotifier extends EnumPrefNotifier<SortOrder> {
   @override
-  SortOrder build() {
-    Future.microtask(_load);
-    return SortOrder.firstWearDate;
-  }
-
-  Future<void> _load() async {
-    final prefs = await ref.read(sharedPreferencesProvider.future);
-    final stored = prefs.getString(_key);
-    state = SortOrder.values.asNameMap()[stored] ?? SortOrder.firstWearDate;
-  }
-
-  Future<void> set(SortOrder value) async {
-    final prefs = await ref.read(sharedPreferencesProvider.future);
-    await prefs.setString(_key, value.name);
-    state = value;
-  }
+  String get prefsKey => 'sort_order';
+  @override
+  SortOrder get defaultValue => SortOrder.firstWearDate;
+  @override
+  List<SortOrder> get values => SortOrder.values;
 }
 
 final sortDirectionProvider =
     NotifierProvider<SortDirectionNotifier, SortDirection>(SortDirectionNotifier.new);
 
-class SortDirectionNotifier extends Notifier<SortDirection> {
-  static const _key = 'sort_direction';
-
+class SortDirectionNotifier extends EnumPrefNotifier<SortDirection> {
   @override
-  SortDirection build() {
-    Future.microtask(_load);
-    return SortDirection.descending;
-  }
+  String get prefsKey => 'sort_direction';
+  @override
+  SortDirection get defaultValue => SortDirection.descending;
+  @override
+  List<SortDirection> get values => SortDirection.values;
 
-  Future<void> _load() async {
-    final prefs = await ref.read(sharedPreferencesProvider.future);
-    final stored = prefs.getString(_key);
-    state = SortDirection.values.asNameMap()[stored] ?? SortDirection.descending;
-  }
-
-  Future<void> toggle() => _set(state == SortDirection.ascending
+  Future<void> toggle() => set(state == SortDirection.ascending
       ? SortDirection.descending
       : SortDirection.ascending);
 
-  Future<void> setDescending() => _set(SortDirection.descending);
-
-  Future<void> _set(SortDirection value) async {
-    final prefs = await ref.read(sharedPreferencesProvider.future);
-    await prefs.setString(_key, value.name);
-    state = value;
-  }
+  Future<void> setDescending() => set(SortDirection.descending);
 }
 
 /// When true, the most recently worn item is always pinned at the top,
@@ -78,26 +52,13 @@ class SortDirectionNotifier extends Notifier<SortDirection> {
 final latestOnTopProvider =
     NotifierProvider<LatestOnTopNotifier, bool>(LatestOnTopNotifier.new);
 
-class LatestOnTopNotifier extends Notifier<bool> {
-  static const _key = 'sort_latest_on_top';
-
+class LatestOnTopNotifier extends BoolPrefNotifier {
   @override
-  bool build() {
-    Future.microtask(_load);
-    return false;
-  }
+  String get prefsKey => 'sort_latest_on_top';
+  @override
+  bool get defaultValue => false;
 
-  Future<void> _load() async {
-    final prefs = await ref.read(sharedPreferencesProvider.future);
-    state = prefs.getBool(_key) ?? false;
-  }
-
-  Future<void> toggle() async {
-    final prefs = await ref.read(sharedPreferencesProvider.future);
-    final value = !state;
-    await prefs.setBool(_key, value);
-    state = value;
-  }
+  Future<void> toggle() => set(!state);
 }
 
 /// Items sorted according to [sortOrderProvider] and [sortDirectionProvider],

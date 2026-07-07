@@ -5,271 +5,169 @@ final sharedPreferencesProvider = FutureProvider<SharedPreferences>(
   (_) => SharedPreferences.getInstance(),
 );
 
+// ---------------------------------------------------------------------------
+// Persistence base classes
+// ---------------------------------------------------------------------------
+
+/// A setting backed by SharedPreferences: starts on [defaultValue], loads the
+/// stored value asynchronously, and persists every [set].
+abstract class PersistedNotifier<T> extends Notifier<T> {
+  String get prefsKey;
+  T get defaultValue;
+
+  T readFrom(SharedPreferences prefs);
+  Future<void> writeTo(SharedPreferences prefs, T value);
+
+  @override
+  T build() {
+    Future.microtask(() async {
+      final prefs = await ref.read(sharedPreferencesProvider.future);
+      state = readFrom(prefs);
+    });
+    return defaultValue;
+  }
+
+  Future<void> set(T value) async {
+    final prefs = await ref.read(sharedPreferencesProvider.future);
+    await writeTo(prefs, value);
+    state = value;
+  }
+}
+
+abstract class BoolPrefNotifier extends PersistedNotifier<bool> {
+  @override
+  bool readFrom(SharedPreferences prefs) => prefs.getBool(prefsKey) ?? defaultValue;
+  @override
+  Future<void> writeTo(SharedPreferences prefs, bool value) =>
+      prefs.setBool(prefsKey, value);
+}
+
+abstract class IntPrefNotifier extends PersistedNotifier<int> {
+  @override
+  int readFrom(SharedPreferences prefs) => prefs.getInt(prefsKey) ?? defaultValue;
+  @override
+  Future<void> writeTo(SharedPreferences prefs, int value) =>
+      prefs.setInt(prefsKey, value);
+}
+
+/// Nullable string setting; null and '' both clear the stored key.
+abstract class StringPrefNotifier extends PersistedNotifier<String?> {
+  @override
+  String? get defaultValue => null;
+  @override
+  String? readFrom(SharedPreferences prefs) => prefs.getString(prefsKey);
+  @override
+  Future<void> writeTo(SharedPreferences prefs, String? value) =>
+      value == null ? prefs.remove(prefsKey) : prefs.setString(prefsKey, value);
+  @override
+  Future<void> set(String? value) =>
+      super.set(value == null || value.isEmpty ? null : value);
+}
+
+/// Enum setting stored by name; unknown stored values fall back to the default.
+abstract class EnumPrefNotifier<T extends Enum> extends PersistedNotifier<T> {
+  List<T> get values;
+  @override
+  T readFrom(SharedPreferences prefs) =>
+      values.asNameMap()[prefs.getString(prefsKey)] ?? defaultValue;
+  @override
+  Future<void> writeTo(SharedPreferences prefs, T value) =>
+      prefs.setString(prefsKey, value.name);
+}
+
+// ---------------------------------------------------------------------------
+// Settings
+// ---------------------------------------------------------------------------
+
 // ID of item selected for widget
 final widgetSelectedItemIdProvider =
     NotifierProvider<WidgetItemNotifier, String?>(WidgetItemNotifier.new);
 
-class WidgetItemNotifier extends Notifier<String?> {
-  static const _key = 'widget_selected_item_id';
-
+class WidgetItemNotifier extends StringPrefNotifier {
   @override
-  String? build() {
-    Future.microtask(_load);
-    return null;
-  }
-
-  Future<void> _load() async {
-    final prefs = await ref.read(sharedPreferencesProvider.future);
-    state = prefs.getString(_key);
-  }
-
-  Future<void> setItemId(String? id) async {
-    final prefs = await ref.read(sharedPreferencesProvider.future);
-    if (id == null) {
-      await prefs.remove(_key);
-    } else {
-      await prefs.setString(_key, id);
-    }
-    state = id;
-  }
+  String get prefsKey => 'widget_selected_item_id';
 }
 
 final sheetsEnabledProvider =
     NotifierProvider<SheetsEnabledNotifier, bool>(SheetsEnabledNotifier.new);
 
-class SheetsEnabledNotifier extends Notifier<bool> {
-  static const _key = 'sheets_enabled';
-
+class SheetsEnabledNotifier extends BoolPrefNotifier {
   @override
-  bool build() {
-    Future.microtask(_load);
-    return false;
-  }
-
-  Future<void> _load() async {
-    final prefs = await ref.read(sharedPreferencesProvider.future);
-    state = prefs.getBool(_key) ?? false;
-  }
-
-  Future<void> set(bool value) async {
-    final prefs = await ref.read(sharedPreferencesProvider.future);
-    await prefs.setBool(_key, value);
-    state = value;
-  }
+  String get prefsKey => 'sheets_enabled';
+  @override
+  bool get defaultValue => false;
 }
-
-// --- CATEGORIES ---
 
 final categoriesEnabledProvider =
     NotifierProvider<CategoriesEnabledNotifier, bool>(CategoriesEnabledNotifier.new);
 
-class CategoriesEnabledNotifier extends Notifier<bool> {
-  static const _key = 'categories_enabled';
-
+class CategoriesEnabledNotifier extends BoolPrefNotifier {
   @override
-  bool build() {
-    Future.microtask(_load);
-    return true;
-  }
-
-  Future<void> _load() async {
-    final prefs = await ref.read(sharedPreferencesProvider.future);
-    state = prefs.getBool(_key) ?? true;
-  }
-
-  Future<void> set(bool value) async {
-    final prefs = await ref.read(sharedPreferencesProvider.future);
-    await prefs.setBool(_key, value);
-    state = value;
-  }
+  String get prefsKey => 'categories_enabled';
+  @override
+  bool get defaultValue => true;
 }
-
-// --- DEFAULT WASH TEMPERATURE ---
 
 final defaultWashTempProvider =
     NotifierProvider<DefaultWashTempNotifier, int>(DefaultWashTempNotifier.new);
 
-class DefaultWashTempNotifier extends Notifier<int> {
-  static const _key = 'default_wash_temp';
-
+class DefaultWashTempNotifier extends IntPrefNotifier {
   @override
-  int build() {
-    Future.microtask(_load);
-    return 30;
-  }
-
-  Future<void> _load() async {
-    final prefs = await ref.read(sharedPreferencesProvider.future);
-    state = prefs.getInt(_key) ?? 30;
-  }
-
-  Future<void> set(int value) async {
-    final prefs = await ref.read(sharedPreferencesProvider.future);
-    await prefs.setInt(_key, value);
-    state = value;
-  }
+  String get prefsKey => 'default_wash_temp';
+  @override
+  int get defaultValue => 30;
 }
-
-// --- WIDGET MONOCHROME ---
 
 final widgetMonochromeProvider =
     NotifierProvider<WidgetMonochromeNotifier, bool>(WidgetMonochromeNotifier.new);
 
-class WidgetMonochromeNotifier extends Notifier<bool> {
-  static const _key = 'widget_monochrome';
-
+class WidgetMonochromeNotifier extends BoolPrefNotifier {
   @override
-  bool build() {
-    Future.microtask(_load);
-    return false;
-  }
-
-  Future<void> _load() async {
-    final prefs = await ref.read(sharedPreferencesProvider.future);
-    state = prefs.getBool(_key) ?? false;
-  }
-
-  Future<void> set(bool value) async {
-    final prefs = await ref.read(sharedPreferencesProvider.future);
-    await prefs.setBool(_key, value);
-    state = value;
-  }
+  String get prefsKey => 'widget_monochrome';
+  @override
+  bool get defaultValue => false;
 }
-
-// --- LOCATION ---
 
 final locationEnabledProvider =
     NotifierProvider<LocationEnabledNotifier, bool>(LocationEnabledNotifier.new);
 
-class LocationEnabledNotifier extends Notifier<bool> {
-  static const _key = 'location_enabled';
-
+class LocationEnabledNotifier extends BoolPrefNotifier {
   @override
-  bool build() {
-    Future.microtask(_load);
-    return false;
-  }
-
-  Future<void> _load() async {
-    final prefs = await ref.read(sharedPreferencesProvider.future);
-    state = prefs.getBool(_key) ?? false;
-  }
-
-  Future<void> set(bool value) async {
-    final prefs = await ref.read(sharedPreferencesProvider.future);
-    await prefs.setBool(_key, value);
-    state = value;
-  }
+  String get prefsKey => 'location_enabled';
+  @override
+  bool get defaultValue => false;
 }
-
-// --- HOME ASSISTANT ---
 
 final haEnabledProvider =
     NotifierProvider<HaEnabledNotifier, bool>(HaEnabledNotifier.new);
 
-class HaEnabledNotifier extends Notifier<bool> {
-  static const _key = 'ha_enabled';
-
+class HaEnabledNotifier extends BoolPrefNotifier {
   @override
-  bool build() {
-    Future.microtask(_load);
-    return false;
-  }
-
-  Future<void> _load() async {
-    final prefs = await ref.read(sharedPreferencesProvider.future);
-    state = prefs.getBool(_key) ?? false;
-  }
-
-  Future<void> set(bool value) async {
-    final prefs = await ref.read(sharedPreferencesProvider.future);
-    await prefs.setBool(_key, value);
-    state = value;
-  }
+  String get prefsKey => 'ha_enabled';
+  @override
+  bool get defaultValue => false;
 }
 
 final haUrlProvider =
     NotifierProvider<HaUrlNotifier, String?>(HaUrlNotifier.new);
 
-class HaUrlNotifier extends Notifier<String?> {
-  static const _key = 'ha_url';
-
+class HaUrlNotifier extends StringPrefNotifier {
   @override
-  String? build() {
-    Future.microtask(_load);
-    return null;
-  }
-
-  Future<void> _load() async {
-    final prefs = await ref.read(sharedPreferencesProvider.future);
-    state = prefs.getString(_key);
-  }
-
-  Future<void> set(String? value) async {
-    final prefs = await ref.read(sharedPreferencesProvider.future);
-    if (value == null || value.isEmpty) {
-      await prefs.remove(_key);
-      state = null;
-    } else {
-      await prefs.setString(_key, value);
-      state = value;
-    }
-  }
+  String get prefsKey => 'ha_url';
 }
 
 final haTokenProvider =
     NotifierProvider<HaTokenNotifier, String?>(HaTokenNotifier.new);
 
-class HaTokenNotifier extends Notifier<String?> {
-  static const _key = 'ha_token';
-
+class HaTokenNotifier extends StringPrefNotifier {
   @override
-  String? build() {
-    Future.microtask(_load);
-    return null;
-  }
-
-  Future<void> _load() async {
-    final prefs = await ref.read(sharedPreferencesProvider.future);
-    state = prefs.getString(_key);
-  }
-
-  Future<void> set(String? value) async {
-    final prefs = await ref.read(sharedPreferencesProvider.future);
-    if (value == null || value.isEmpty) {
-      await prefs.remove(_key);
-      state = null;
-    } else {
-      await prefs.setString(_key, value);
-      state = value;
-    }
-  }
+  String get prefsKey => 'ha_token';
 }
 
 final sheetsSpreadsheetIdProvider =
     NotifierProvider<SpreadsheetIdNotifier, String?>(SpreadsheetIdNotifier.new);
 
-class SpreadsheetIdNotifier extends Notifier<String?> {
-  static const _key = 'sheets_spreadsheet_id';
-
+class SpreadsheetIdNotifier extends StringPrefNotifier {
   @override
-  String? build() {
-    Future.microtask(_load);
-    return null;
-  }
-
-  Future<void> _load() async {
-    final prefs = await ref.read(sharedPreferencesProvider.future);
-    state = prefs.getString(_key);
-  }
-
-  Future<void> set(String? id) async {
-    final prefs = await ref.read(sharedPreferencesProvider.future);
-    if (id == null) {
-      await prefs.remove(_key);
-    } else {
-      await prefs.setString(_key, id);
-    }
-    state = id;
-  }
+  String get prefsKey => 'sheets_spreadsheet_id';
 }

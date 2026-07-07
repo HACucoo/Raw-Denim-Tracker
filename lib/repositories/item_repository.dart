@@ -28,6 +28,17 @@ class ItemRepository {
     await db.insert('items', item.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
+  /// Insert-or-update WITHOUT `ConflictAlgorithm.replace`: REPLACE is
+  /// DELETE+INSERT under the hood, and with foreign keys ON the delete
+  /// cascades and wipes the item's wear_days/washes. Use this whenever the
+  /// item might already exist (e.g. backup import).
+  Future<void> upsert(Item item) async {
+    final db = await _db;
+    final updated =
+        await db.update('items', item.toMap(), where: 'id = ?', whereArgs: [item.id]);
+    if (updated == 0) await db.insert('items', item.toMap());
+  }
+
   Future<void> update(Item item) async {
     final db = await _db;
     await db.update('items', item.toMap(), where: 'id = ?', whereArgs: [item.id]);

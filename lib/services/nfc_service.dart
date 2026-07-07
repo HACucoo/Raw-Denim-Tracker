@@ -5,7 +5,8 @@ import 'package:nfc_manager/nfc_manager_android.dart';
 import 'package:nfc_manager/ndef_record.dart';
 
 class NfcService {
-  static Future<bool> isAvailable() => NfcManager.instance.isAvailable();
+  static Future<bool> isAvailable() async =>
+      await NfcManager.instance.checkAvailability() == NfcAvailability.enabled;
 
   /// Reads a single NFC tag and returns its UID as a hex string.
   /// Works with any tag regardless of what's written on it –
@@ -23,7 +24,7 @@ class NfcService {
             if (uid != null) {
               onTagRead(uid);
             } else {
-              onError('Could not read UID. Tag type: ${tag.data.runtimeType}');
+              onError('Could not read UID.');
             }
           } catch (e) {
             onError(e.toString());
@@ -110,36 +111,14 @@ class NfcService {
       s.codeUnits; // ASCII-safe for our URI
 
   static String? _extractUid(NfcTag tag) {
-    // nfc_manager 4.x on Android: tag.data is TagPigeon, not a Map.
-    // NfcTagAndroid exposes the raw hardware UID via .id (Uint8List).
+    // nfc_manager 4.x on Android: NfcTagAndroid exposes the raw hardware UID
+    // via .id (Uint8List). This app is Android-only, so no iOS fallback.
     if (Platform.isAndroid) {
       final androidTag = NfcTagAndroid.from(tag);
       if (androidTag != null && androidTag.id.isNotEmpty) {
         return _bytesToHex(androidTag.id);
       }
     }
-
-    // Fallback for iOS or older nfc_manager versions (Map-based data).
-    if (tag.data is Map) {
-      final data = tag.data as Map;
-      for (final value in data.values) {
-        if (value is! Map) continue;
-        for (final idKey in ['identifier', 'id']) {
-          final raw = value[idKey];
-          if (raw == null) continue;
-          final bytes = _toIntList(raw);
-          if (bytes != null && bytes.isNotEmpty) return _bytesToHex(bytes);
-        }
-      }
-    }
-
-    return null;
-  }
-
-  static List<int>? _toIntList(dynamic raw) {
-    try {
-      if (raw is List) return raw.map((e) => (e as num).toInt()).toList();
-    } catch (_) {}
     return null;
   }
 

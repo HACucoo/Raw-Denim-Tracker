@@ -184,7 +184,7 @@ class _ItemDetailScreenState extends ConsumerState<ItemDetailScreen>
                   await ref
                       .read(itemsProvider.notifier)
                       .deleteItem(widget.itemId);
-                  if (mounted) context.pop();
+                  if (context.mounted) context.pop();
                 }
               }
             },

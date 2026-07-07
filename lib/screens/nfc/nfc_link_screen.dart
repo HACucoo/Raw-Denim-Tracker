@@ -40,14 +40,16 @@ class _NfcLinkScreenState extends ConsumerState<NfcLinkScreen> {
     NfcService.readAndWriteNdefLink(
       itemId: widget.itemId,
       onTagRead: (uid, ndefWritten) {
-        if (mounted) setState(() {
+        if (!mounted) return;
+        setState(() {
           _state = _State.read;
           _readUid = uid;
           _ndefWritten = ndefWritten;
         });
       },
       onError: (error) {
-        if (mounted) setState(() {
+        if (!mounted) return;
+        setState(() {
           _state = _State.error;
           _error = error;
         });
@@ -69,7 +71,6 @@ class _NfcLinkScreenState extends ConsumerState<NfcLinkScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.linkNfcTag)),

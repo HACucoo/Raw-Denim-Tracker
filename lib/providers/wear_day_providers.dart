@@ -12,7 +12,7 @@ import 'sort_providers.dart';
 
 final wearDayRepositoryProvider = Provider<WearDayRepository>((_) => WearDayRepository());
 
-final _uuid = Uuid();
+const _uuid = Uuid();
 
 final wearDaysProvider = FutureProvider.autoDispose.family<List<WearDay>, String>(
   (ref, itemId) => ref.read(wearDayRepositoryProvider).getByItemId(itemId),
@@ -74,7 +74,7 @@ class WearDayActions {
     _ref.invalidate(wearDaysProvider(wearDay.itemId));
   }
 
-  /// Best-effort location capture with 5-second timeout. Returns (null, null) on failure.
+  /// Best-effort location capture with 30-second timeout. Returns (null, null) on failure.
   Future<(double?, double?)> _currentLocation() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -142,6 +142,9 @@ class WearDayActions {
     final item = await _itemRepo.getById(itemId);
     if (item == null) return;
     await _itemRepo.update(item.copyWith(baseWearCount: count));
+    // itemsProvider feeds itemProvider, which the detail screen reads the
+    // base count from — without this the "+N" row shows the old value.
+    _ref.invalidate(itemsProvider);
     _ref.invalidate(wearDayCountProvider(itemId));
     _ref.invalidate(sortedItemsProvider);
     _pushToHa(itemId);

@@ -34,9 +34,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       final path = item.photoPath;
       if (path == null || _precached.contains(path)) continue;
       _precached.add(path);
-      // Decode at thumbnail size (same cacheWidth as GarmentPhoto uses for 72 px).
+      // Width-only, matching GarmentPhoto's decode for 72 px exactly — a
+      // different width/height pair would be a separate cache entry and the
+      // precache would be wasted work.
       precacheImage(
-        ResizeImage(FileImage(File(path)), width: 216, height: 216),
+        ResizeImage(FileImage(File(path)), width: 216),
         context,
       );
     }

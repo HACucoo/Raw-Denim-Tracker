@@ -264,7 +264,10 @@ class _ItemFormScreenState extends ConsumerState<ItemFormScreen> {
             const SizedBox(height: 12),
 
             DropdownButtonFormField<ItemCategory?>(
-              value: _category,
+              // initialValue is only read on first build — recreate the field
+              // once the existing item has loaded so its category shows up.
+              key: ValueKey(_existingItem?.id),
+              initialValue: _category,
               decoration: InputDecoration(
                 labelText: l10n.category,
                 border: const OutlineInputBorder(),

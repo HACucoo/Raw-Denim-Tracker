@@ -207,7 +207,7 @@ class SettingsScreen extends ConsumerWidget {
       ),
     );
     if (context.mounted) {
-      await ref.read(widgetSelectedItemIdProvider.notifier).setItemId(selected);
+      await ref.read(widgetSelectedItemIdProvider.notifier).set(selected);
       await WidgetService.updateWidget(selected);
     }
   }
@@ -354,9 +354,10 @@ class SettingsScreen extends ConsumerWidget {
         }
         return;
       }
+      final notifier = ref.read(sheetsSpreadsheetIdProvider.notifier);
       final id = await SheetsService.createSpreadsheet('Raw Denim Tracker');
+      await notifier.set(id);
       if (context.mounted) {
-        await ref.read(sheetsSpreadsheetIdProvider.notifier).set(id);
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(l10n.spreadsheetCreated)));
       }
@@ -394,8 +395,8 @@ class SettingsScreen extends ConsumerWidget {
         content: TextField(
           controller: controller,
           keyboardType: TextInputType.number,
-          decoration: InputDecoration(
-            border: const OutlineInputBorder(),
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
             suffixText: '°C',
           ),
           autofocus: true,

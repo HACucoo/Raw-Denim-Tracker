@@ -124,6 +124,7 @@
   "haNotConfigured": "Nicht konfiguriert",
   "haSendNow": "Jetzt senden",
   "haSendNowSuccess": "An Home Assistant gesendet",
+  "haArchiveScriptMissing": "Gesendet – nur das Archiv-Skript script.raw_denim_speichern fehlt in Home Assistant",
   "haSendNowFailed": "Nichts zu senden – noch keine Tragetage erfasst",
   "category": "Kategorie",
   "categoryAll": "Alle",

@@ -6,6 +6,7 @@ import '../models/item.dart';
 import '../repositories/item_repository.dart';
 import '../services/widget_service.dart';
 import 'settings_providers.dart';
+import '../services/ha_archive_service.dart';
 
 final itemRepositoryProvider = Provider<ItemRepository>((_) => ItemRepository());
 
@@ -43,12 +44,14 @@ class ItemsNotifier extends AsyncNotifier<List<Item>> {
     );
     await _repo.insert(item);
     ref.invalidateSelf();
+    HaArchiveService.schedule();
     return item;
   }
 
   Future<void> updateItem(Item item) async {
     await _repo.update(item);
     ref.invalidateSelf();
+    HaArchiveService.schedule();
     WidgetService.refreshIfWidgetItem(item.id);
   }
 
@@ -56,6 +59,7 @@ class ItemsNotifier extends AsyncNotifier<List<Item>> {
     final item = await _repo.getById(id);
     await _repo.delete(id);
     ref.invalidateSelf();
+    HaArchiveService.schedule();
 
     // The photo copy in the documents dir belongs to this item alone —
     // remove it so deleted items don't leave files behind.

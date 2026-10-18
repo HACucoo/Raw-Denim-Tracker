@@ -8,6 +8,7 @@ import '../../providers/wear_day_providers.dart';
 import '../../providers/wash_providers.dart';
 import '../../services/widget_service.dart';
 import '../../services/backup_service.dart';
+import '../../services/ha_archive_service.dart';
 import '../../services/ha_service.dart';
 import '../../services/sheets_service.dart';
 
@@ -423,6 +424,8 @@ class SettingsScreen extends ConsumerWidget {
   Future<void> _sendToHaNow(
       BuildContext context, WidgetRef ref, String haUrl, String haToken) async {
     final l10n = AppLocalizations.of(context)!;
+    // Everything for the HA archive first; it needs no worn item
+    final archived = await HaArchiveService.send().catchError((_) => false);
     // Find the most recently worn item across all items.
     final lastWornDates = await ref.read(wearDayRepositoryProvider).getLastWornDates();
     if (lastWornDates.isEmpty) {
@@ -448,7 +451,11 @@ class SettingsScreen extends ConsumerWidget {
     ).catchError((_) => false);
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(ok ? l10n.haSendNowSuccess : l10n.haConnectionFailed),
+        content: Text(!ok
+            ? l10n.haConnectionFailed
+            : archived
+                ? l10n.haSendNowSuccess
+                : l10n.haArchiveScriptMissing),
       ));
     }
   }

@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 import '../models/wear_day.dart';
 import '../repositories/item_repository.dart';
 import '../repositories/wear_day_repository.dart';
+import '../services/ha_archive_service.dart';
 import '../services/ha_service.dart';
 import '../services/widget_service.dart';
 import 'item_providers.dart';
@@ -103,6 +104,7 @@ class WearDayActions {
   /// Reads directly from SharedPreferences to avoid race conditions with
   /// provider initialisation (providers load asynchronously via microtask).
   Future<void> _pushToHa(String itemId) async {
+    HaArchiveService.schedule();
     final prefs = await SharedPreferences.getInstance();
     final haEnabled = prefs.getBool('ha_enabled') ?? false;
     if (!haEnabled) return;
@@ -128,6 +130,7 @@ class WearDayActions {
     _ref.invalidate(wearDaysProvider(itemId));
     _ref.invalidate(lastWearDateProvider(itemId));
     _ref.invalidate(sortedItemsProvider);
+    HaArchiveService.schedule();
   }
 
   Future<void> deleteWearDay(String itemId, String id) async {

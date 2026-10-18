@@ -752,6 +752,12 @@ abstract class AppLocalizations {
   /// **'Sent to Home Assistant'**
   String get haSendNowSuccess;
 
+  /// No description provided for @haArchiveScriptMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent – only the archive script script.raw_denim_speichern is missing in Home Assistant'**
+  String get haArchiveScriptMissing;
+
   /// No description provided for @haSendNowFailed.
   ///
   /// In en, this message translates to:

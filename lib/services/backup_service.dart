@@ -12,6 +12,7 @@ import '../models/wash.dart';
 import '../repositories/item_repository.dart';
 import '../repositories/wear_day_repository.dart';
 import '../repositories/wash_repository.dart';
+import 'ha_archive_service.dart';
 
 const _lastAutoBackupKey = 'last_auto_backup_ms';
 // Single canonical filename for the local auto-backup. Suffix is .zip because
@@ -193,9 +194,12 @@ class BackupService {
       final bytes = await file.readAsBytes();
       // ZIP files always start with "PK\x03\x04" (or "PK\x05\x06" for empty).
       final isZip = bytes.length >= 2 && bytes[0] == 0x50 && bytes[1] == 0x4B;
-      if (isZip) return _importFromZipBytes(bytes);
-      // Fall back to legacy JSON.
-      return _importFromJsonString(utf8.decode(bytes));
+      // Legacy JSON when it is no ZIP
+      final result = isZip
+          ? await _importFromZipBytes(bytes)
+          : await _importFromJsonString(utf8.decode(bytes));
+      if (result == BackupResult.success) HaArchiveService.schedule();
+      return result;
     } catch (_) {
       return BackupResult.error;
     }

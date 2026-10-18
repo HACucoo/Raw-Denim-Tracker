@@ -359,6 +359,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get haSendNowSuccess => 'An Home Assistant gesendet';
 
   @override
+  String get haArchiveScriptMissing =>
+      'Gesendet – nur das Archiv-Skript script.raw_denim_speichern fehlt in Home Assistant';
+
+  @override
   String get haSendNowFailed =>
       'Nichts zu senden – noch keine Tragetage erfasst';
 

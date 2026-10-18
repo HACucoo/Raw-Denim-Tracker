@@ -351,6 +351,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get haSendNowSuccess => 'Sent to Home Assistant';
 
   @override
+  String get haArchiveScriptMissing =>
+      'Sent – only the archive script script.raw_denim_speichern is missing in Home Assistant';
+
+  @override
   String get haSendNowFailed => 'Nothing to send – no wear days recorded yet';
 
   @override

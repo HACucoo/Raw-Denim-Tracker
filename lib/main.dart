@@ -5,6 +5,7 @@ import 'repositories/item_repository.dart';
 import 'repositories/wear_day_repository.dart';
 import 'repositories/wash_repository.dart';
 import 'services/backup_service.dart';
+import 'services/ha_archive_service.dart';
 import 'services/widget_service.dart';
 
 void main() async {
@@ -14,6 +15,8 @@ void main() async {
   // Ensure the widget reflects the current date — covers the edge case where
   // the device was off overnight and missed the midnight DATE_CHANGED broadcast.
   WidgetService.forceRefresh();
+  // Catches up whatever HA missed while it was out of reach
+  HaArchiveService.schedule();
 }
 
 /// Runs the weekly auto-backup check in the background after the app starts.

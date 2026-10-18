@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../models/wash.dart';
 import '../repositories/wash_repository.dart';
+import '../services/ha_archive_service.dart';
 
 final washRepositoryProvider = Provider<WashRepository>((_) => WashRepository());
 
@@ -22,15 +23,18 @@ class WashActions {
   Future<void> addWash(String itemId, {required DateTime date, required int tempCelsius, int? wearDaysAtWash}) async {
     await _repo.insert(Wash(id: _uuid.v4(), itemId: itemId, date: date, tempCelsius: tempCelsius, wearDaysAtWash: wearDaysAtWash));
     _ref.invalidate(washesProvider(itemId));
+    HaArchiveService.schedule();
   }
 
   Future<void> updateWash(String itemId, Wash wash) async {
     await _repo.update(wash);
     _ref.invalidate(washesProvider(itemId));
+    HaArchiveService.schedule();
   }
 
   Future<void> deleteWash(String itemId, String id) async {
     await _repo.delete(id);
     _ref.invalidate(washesProvider(itemId));
+    HaArchiveService.schedule();
   }
 }

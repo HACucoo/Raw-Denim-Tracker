@@ -12,8 +12,8 @@ import '../repositories/wash_repository.dart';
 import '../repositories/wear_day_repository.dart';
 
 /// Sends the complete current state — garments, wear days with their location, washes — to the Home Assistant
-/// script `script.raw_denim_speichern`, which writes it as one JSON object per line into HA's media folder
-/// (served to logged-in callers only), where the HA archive picks it up. Every send replaces the whole file, so a
+/// script `script.raw_denim_speichern`, which writes it as one JSON object per line into a file the HA archive
+/// picks up (where that file lives is HA's business). Every send replaces the whole file, so a
 /// send missed while HA was out of reach is made good by the next one; the archive keeps what it has seen.
 ///
 /// Photos are too big to go along every time: a garment line only names its photo (`bild`, a key that changes
@@ -35,8 +35,9 @@ class HaArchiveService {
   }
 
   /// Returns true when HA took the data. False when the integration is off, not set up, the script does not
-  /// exist (yet) or HA is out of reach. [allPhotos] sends every photo again, not only new or changed ones.
-  static Future<bool> send({bool allPhotos = false}) async {
+  /// exist (yet) or HA is out of reach. Photos follow on their own: one that fails (a timeout, say) does not
+  /// make the send fail, it is tried again next time.
+  static Future<bool> send() async {
     final prefs = await SharedPreferences.getInstance();
     if (!(prefs.getBool('ha_enabled') ?? false)) return false;
     final haUrl = prefs.getString('ha_url');
@@ -50,7 +51,11 @@ class HaArchiveService {
             headers: headers, body: jsonEncode({'zeilen': await lines(items)}))
         .timeout(const Duration(seconds: 30));
     if (response.statusCode != 200) return false;
-    await _sendPhotos(items, base, headers, prefs, allPhotos);
+    try {
+      await _sendPhotos(items, base, headers, prefs);
+    } catch (_) {
+      // Out of reach halfway through: the rest goes with the next send
+    }
     return true;
   }
 
@@ -64,14 +69,15 @@ class HaArchiveService {
     return '${p.basename(path)}-${stat.size}-${stat.modified.millisecondsSinceEpoch}';
   }
 
-  /// Each photo HA does not have yet. A photo HA refused or that could not be read is tried again next time;
-  /// a missing photo script (older HA setup) stops the rest.
+  /// Each photo HA does not have yet — only those: HA appends every photo it gets to its file. A photo HA
+  /// refused or that could not be read is tried again next time; a missing photo script (older HA setup) stops
+  /// the rest.
   static Future<void> _sendPhotos(List<Item> items, String base, Map<String, String> headers,
-      SharedPreferences prefs, bool all) async {
+      SharedPreferences prefs) async {
     for (final item in items) {
       final key = photoKey(item);
       if (key == null) continue;
-      if (!all && prefs.getString('$_sentPhotoPrefix${item.id}') == key) continue;
+      if (prefs.getString('$_sentPhotoPrefix${item.id}') == key) continue;
       final Uint8List? jpeg;
       try {
         jpeg = await compute(_thumbnail, item.photoPath!);

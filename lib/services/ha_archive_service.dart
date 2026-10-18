@@ -6,10 +6,10 @@ import '../repositories/item_repository.dart';
 import '../repositories/wash_repository.dart';
 import '../repositories/wear_day_repository.dart';
 
-/// Sends the complete current state — garments, wear days, washes, never locations — to the Home Assistant
-/// script `script.raw_denim_speichern`, which writes it as one JSON object per line to a file the HA archive
-/// picks up. Every send replaces the whole file, so a send missed while HA was out of reach is made good by
-/// the next one; the archive keeps what it has seen.
+/// Sends the complete current state — garments, wear days with their location, washes — to the Home Assistant
+/// script `script.raw_denim_speichern`, which writes it as one JSON object per line into HA's media folder
+/// (served to logged-in callers only), where the HA archive picks it up. Every send replaces the whole file, so a
+/// send missed while HA was out of reach is made good by the next one; the archive keeps what it has seen.
 class HaArchiveService {
   static const _script = 'raw_denim_speichern';
   static Timer? _timer;
@@ -63,7 +63,15 @@ class HaArchiveService {
           'tragetage_zaehlen': i.trackWearDays,
           'angelegt': i.createdAt.toIso8601String(),
         },
-      for (final w in wearDays) {'typ': 'tragetag', 'id': w.id, 'stueck': w.itemId, 'tag': _day(w.date)},
+      for (final w in wearDays)
+        {
+          'typ': 'tragetag',
+          'id': w.id,
+          'stueck': w.itemId,
+          'tag': _day(w.date),
+          'breite': w.latitude,
+          'laenge': w.longitude,
+        },
       for (final w in washes)
         {
           'typ': 'waesche',

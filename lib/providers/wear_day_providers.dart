@@ -73,6 +73,8 @@ class WearDayActions {
     if (lat == null || lng == null) return;
     await _repo.update(wearDay.copyWith(latitude: lat, longitude: lng));
     _ref.invalidate(wearDaysProvider(wearDay.itemId));
+    // The location comes up to 30 s after the wear day: send again with it
+    HaArchiveService.schedule();
   }
 
   /// Best-effort location capture with 30-second timeout. Returns (null, null) on failure.

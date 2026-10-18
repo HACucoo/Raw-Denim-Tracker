@@ -26,6 +26,23 @@ subprojects {
 subprojects {
     project.evaluationDependsOn(':app')
 }
+// Plugins (home_widget) inline Java 11 bytecode while their own Kotlin target defaults to 1.8, which fails with a
+// current JDK: build every module for Java 17, like the app
+subprojects { project ->
+    def java17 = {
+        if (project.hasProperty('android')) {
+            project.android.compileOptions {
+                sourceCompatibility JavaVersion.VERSION_17
+                targetCompatibility JavaVersion.VERSION_17
+            }
+        }
+        project.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+            kotlinOptions { jvmTarget = '17' }
+        }
+    }
+    // :app is evaluated early (evaluationDependsOn above)
+    if (project.state.executed) { java17() } else { project.afterEvaluate { java17() } }
+}
 
 tasks.register("clean", Delete) {
     delete rootProject.buildDir

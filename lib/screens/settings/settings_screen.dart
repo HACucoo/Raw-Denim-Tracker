@@ -424,8 +424,8 @@ class SettingsScreen extends ConsumerWidget {
   Future<void> _sendToHaNow(
       BuildContext context, WidgetRef ref, String haUrl, String haToken) async {
     final l10n = AppLocalizations.of(context)!;
-    // Everything for the HA archive first; it needs no worn item
-    final archived = await HaArchiveService.send().catchError((_) => false);
+    // Everything for the HA archive first, all photos again too; it needs no worn item
+    final archived = await HaArchiveService.send(allPhotos: true).catchError((_) => false);
     // Find the most recently worn item across all items.
     final lastWornDates = await ref.read(wearDayRepositoryProvider).getLastWornDates();
     if (lastWornDates.isEmpty) {

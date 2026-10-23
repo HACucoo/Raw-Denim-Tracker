@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:home_widget/home_widget.dart';
 import 'app.dart';
 import 'repositories/item_repository.dart';
 import 'repositories/wear_day_repository.dart';
 import 'repositories/wash_repository.dart';
 import 'services/backup_service.dart';
 import 'services/ha_archive_service.dart';
+import 'services/widget_background.dart';
 import 'services/widget_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Lets a widget tap push to Home Assistant without the app (see widget_background.dart)
+  HomeWidget.registerInteractivityCallback(widgetBackgroundCallback);
   runApp(const ProviderScope(child: RawDenimApp()));
   _scheduleAutoBackup();
   // Ensure the widget reflects the current date — covers the edge case where

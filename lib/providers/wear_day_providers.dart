@@ -102,29 +102,11 @@ class WearDayActions {
     }
   }
 
-  /// Fire-and-forget HA update — failures are silently ignored.
-  /// Reads directly from SharedPreferences to avoid race conditions with
-  /// provider initialisation (providers load asynchronously via microtask).
-  Future<void> _pushToHa(String itemId) async {
+  /// Fire-and-forget HA update — the archive (whole state, debounced) and the "currently worn" sensor.
+  /// Failures are silently ignored. The same two pushes run after a widget tap (widget_background.dart).
+  void _pushToHa(String itemId) {
     HaArchiveService.schedule();
-    final prefs = await SharedPreferences.getInstance();
-    final haEnabled = prefs.getBool('ha_enabled') ?? false;
-    if (!haEnabled) return;
-    final haUrl = prefs.getString('ha_url');
-    final haToken = prefs.getString('ha_token');
-    if (haUrl == null || haToken == null) return;
-
-    final item = await _itemRepo.getById(itemId);
-    if (item == null) return;
-    final tracked = await _repo.countByItemId(itemId);
-    final totalDays = item.baseWearCount + tracked;
-
-    await HaService.updateCurrentItem(
-      haUrl: haUrl,
-      token: haToken,
-      itemName: '${item.brand} ${item.model}',
-      wearDays: totalDays,
-    ).catchError((_) => false);
+    HaService.pushItem(itemId);
   }
 
   Future<void> updateWearDay(String itemId, WearDay wearDay) async {

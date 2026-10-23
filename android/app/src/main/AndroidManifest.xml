@@ -79,6 +79,17 @@
             </intent-filter>
         </receiver>
 
+        <!-- home_widget's background receiver: WearDayReceiver raises it after a widget tap so a
+             headless Dart engine can push the new wear day to Home Assistant. Only our own explicit
+             broadcast reaches it (not exported). -->
+        <receiver
+            android:name="es.antonborri.home_widget.HomeWidgetBackgroundReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="es.antonborri.home_widget.action.BACKGROUND" />
+            </intent-filter>
+        </receiver>
+
         <!-- Home screen widget -->
         <receiver
             android:name=".WearDayWidget"

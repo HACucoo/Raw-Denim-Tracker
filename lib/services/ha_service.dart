@@ -1,8 +1,32 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import '../repositories/item_repository.dart';
+import '../repositories/wear_day_repository.dart';
 
 class HaService {
   static const _entityId = 'sensor.raw_denim_aktuell';
+
+  /// Pushes [itemId] as the currently worn item with its total wear days. Fire-and-forget: does nothing
+  /// when the integration is off or not set up, and swallows failures. Reads the settings straight from
+  /// SharedPreferences so it works before the providers have loaded and in the widget's background engine.
+  static Future<void> pushItem(String itemId) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!(prefs.getBool('ha_enabled') ?? false)) return;
+    final haUrl = prefs.getString('ha_url');
+    final haToken = prefs.getString('ha_token');
+    if (haUrl == null || haToken == null) return;
+
+    final item = await ItemRepository().getById(itemId);
+    if (item == null) return;
+    final tracked = await WearDayRepository().countByItemId(itemId);
+    await updateCurrentItem(
+      haUrl: haUrl,
+      token: haToken,
+      itemName: '${item.brand} ${item.model}',
+      wearDays: item.baseWearCount + tracked,
+    ).catchError((_) => false);
+  }
 
   /// Updates the HA sensor with the currently worn item.
   /// Returns true on success (HTTP 200/201).
